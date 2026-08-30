@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harvest Heist (DoCA & FCI Smart Procurement Network)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-blue: #0284c7; /* Sky 600 */
+      --primary-hover: #0369a1; /* Sky 700 */
+      --surface-light: #f0f9ff; /* Sky 50 */
+      --surface-card: #ffffff;
+      --border-light: #cbd5e1;
+      --text-dark: #0f172a;
+      --text-slate: #334155;
+      --text-muted: #64748b;
+      --amber-warn: #d97706;
+    }
+
+    /* Keep this for any legacy code, but we primarily use Tailwind dark: now */
+    body.high-contrast {
+      --surface-card: #0f172a; /* Slate 900 */
+      --border-light: #1e293b; /* Slate 800 */
+      --text-dark: #f8fafc; /* Slate 50 */
+      --text-slate: #cbd5e1; /* Slate 300 */
+      --text-muted: #94a3b8; /* Slate 400 */
+      --surface-light: #022c22;
+      --primary-blue: #38bdf8; /* Sky 400 */
+    }
+
+    html[data-font-size="small"] { font-size: 14px; }
+    html[data-font-size="normal"] { font-size: 16px; }
+    html[data-font-size="large"] { font-size: 18px; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+    body {
+      background-color: #f8fafc;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.94), rgba(240, 249, 255, 0.96)),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%200284c7' fill-opacity='0.04' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    body.high-contrast, html.dark body {
+      background-color: #020617 !important; /* Tailwind slate-950 */
+      background-image: none !important;
+    }
+
+    /* Tiranga Bar */
+    .tiranga-bar {
+      height: 4px;
+      width: 100%;
+      background: linear-gradient(90deg, #FF9933 0%, #FF9933 33.3%, #FFFFFF 33.3%, #FFFFFF 66.6%, #128807 66.6%, #128807 100%);
+      position: sticky;
+      top: 0;
+      z-index: 110;
+    }
+
+    /* Header Navbar */
+    .gov-header {
+      background: #ffffff;
+      border-bottom: 1px solid #cbd5e1;
+      padding: 12px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      position: sticky;
+      top: 4px;
+      z-index: 100;
+    }
+    body.high-contrast .gov-header { background: #111827; border-bottom-color: #374151; }
+
+    .gov-brand { display: flex; align-items: center; gap: 12px; }
+    .emblem-icon {
+      font-size: 26px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .gov-title-main {
+      font-family: 'Outfit', sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--primary-blue);
+      line-height: 1.2;
+    }
+    .gov-subtitle { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+
+    .header-controls { display: flex; align-items: center; gap: 10px; }
+    .font-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .contrast-btn {
+      background: #1e293b;
+      color: #ffffff;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .lang-select {
+      background: var(--surface-light);
+      border: 1px solid var(--primary-blue);
+      color: var(--primary-blue);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* Agmarknet Marquee Ticker */
+    .ticker-wrap {
+      width: 100%;
+      background: #1e293b;
+      color: #f8fafc;
+      overflow: hidden;
+      height: 36px;
+      line-height: 36px;
+      font-size: 13px;
+      white-space: nowrap;
+      border-bottom: 2px solid var(--primary-blue);
+    }
+    .ticker {
+      display: inline-block;
+      white-space: nowrap;
+      padding-left: 100%;
+      animation: ticker 35s linear infinite;
+    }
+    @keyframes ticker {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-100%, 0, 0); }
+    }
+
+    /* Process Flow */
+    .process-step {
+      display: flex; align-items: center; gap: 8px; background: #f1f5f9; padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; cursor: pointer; white-space: nowrap; transition: 0.2s;
+    }
+    .process-step:hover { border-color: var(--primary-blue); }
+    .process-step.active { background: #dcfce7; border-color: var(--primary-blue); }
+    .step-num { font-family: 'Outfit'; font-size: 14px; font-weight: 800; background: #e2e8f0; color: var(--text-slate); padding: 4px 8px; border-radius: 6px; }
+    .process-step.active .step-num { background: var(--primary-blue); color: white; }
+    .step-text { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+    body.high-contrast .process-step { background: #1e293b; border-color: #334155; }
+    body.high-contrast .step-num { background: #334155; color: white; }
+    body.high-contrast .process-step.active { background: #064e3b; border-color: #10b981; }
+    body.high-contrast .process-step.active .step-num { background: #10b981; }
+
+    /* Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      padding: 20px 28px;
+      flex: 1;
+    }
+
+    .metrics-row {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 4px;
+    }
+    .metric-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border-light);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+    .metric-title { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+    .metric-val { font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 700; margin-top: 6px; color: var(--primary-blue); }
+
+    .card {
+      background: var(--surface-card);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 8px;
+    }
+
+    /* Table styling */
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 10px 12px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
+    td { padding: 12px; font-size: 13px; border-bottom: 1px solid #f1f5f9; color: var(--text-slate); }
+    tr:hover { background: var(--surface-light); }
+
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+    .badge-booked { background: #fef3c7; color: #d97706; }
+    .badge-geofenced { background: #e0f2fe; color: #0369a1; }
+    .badge-completed { background: #dbeafe; color: #1d4ed8; }
+
+    /* Controls */
+    .form-group { margin-bottom: 14px; }
+    .form-label { font-size: 12px; font-weight: 600; color: var(--text-slate); margin-bottom: 4px; display: block; }
+    .form-control { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; font-size: 13px; }
+    body.high-contrast .form-control { background: #1f2937; border-color: #4b5563; color: white; }
+
+    .btn {
+      width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-green { background: var(--primary-blue); color: white; box-shadow: 0 4px 12px rgba(21, 128, 61, 0.2); }
+    .btn-green:hover { background: var(--primary-hover); }
+    .btn-blue { background: #1d4ed8; color: white; }
+
+    .scale-box {
+      background: var(--surface-light);
+      border: 1px dashed var(--primary-blue);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .scale-val { font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 800; color: var(--primary-blue); }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {}
+      }
+    }
+  </script>
+</head>
+<body class="transition-colors duration-200 dark:bg-slate-950 dark:text-slate-200">
+
+  <div class="tiranga-bar"></div>
+
+  <header class="gov-header">
+    <div class="gov-brand">
+      <div class="emblem-icon">🏛️</div>
+      <div>
+        <div class="gov-title-main" id="adminTitle">Harvest Heist (DoCA & FCI Smart Procurement Network)</div>
+        <div class="gov-subtitle">Department of Consumer Affairs (DoCA) & Food Corporation of India</div>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <button class="contrast-btn" id="themeToggleBtn" onclick="toggleContrast()">🌙 Dark Mode</button>
+      
+      <select class="lang-select" id="adminLangPicker" onchange="changeLanguage(this.value)">
+        <option value="en-IN">🇬🇧 English</option>
+        <option value="hi-IN">🇮🇳 हिंदी (Hindi)</option>
+        <option value="mr-IN">🇮🇳 मराठी (Marathi)</option>
+        <option value="pa-IN">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+        <option value="ta-IN">🇮🇳 தமிழ் (Tamil)</option>
+        <option value="te-IN">🇮🇳 తెలుగు (Telugu)</option>
+        <option value="bn-IN">🇮🇳 বাংলা (Bengali)</option>
+        <option value="gu-IN">🇮🇳 ગુજરાતી (Gujarati)</option>
+        <option value="kn-IN">🇮🇳 ಕನ್ನಡ (Kannada)</option>
+      </select>
+
+      <button class="btn btn-blue" style="width:auto; padding:6px 12px;" onclick="seedDemoData()">🔄 Reset Data</button>
+    </div>
+  </header>
+
+  <div class="ticker-wrap">
+    <div class="ticker">
+      🌾 Pune APMC Mandi: Wheat ₹2,310/Qtl (+1.5%) | Daily Arrivals: 1,420 Qtl | Procurement Status: Active &nbsp;&nbsp;&nbsp;
+      🫘 Latur APMC: Tur (Arhar) ₹7,150/Qtl | Daily Arrivals: 850 Qtl | MSP Rate: ₹7,000/Qtl (Procurement Live) &nbsp;&nbsp;&nbsp;
+      🌾 Karnal Grain Mandi: Wheat ₹2,280/Qtl | Arrivals: 2,100 Qtl | DBT Direct Credit: Active &nbsp;&nbsp;&nbsp;
+      🌻 Nashik APMC: Soyabean ₹4,650/Qtl | Arrivals: 980 Qtl | Quality Grade A: 88%
+    </div>
+  </div>
+
+  <div class="process-flow-container" style="padding: 16px 28px; background: var(--surface-card); border-bottom: 1px solid var(--border-light);">
+    <h3 style="font-family:'Outfit'; font-size:16px; margin-bottom:12px; color:var(--text-dark);">e-Samridhi Process Flow (Administrative Controls)</h3>
+    <div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:8px;">
+      <div class="process-step" id="step-01" onclick="switchAdminView(1)">
+        <div class="step-num">01</div>
+        <div class="step-text" data-i18n="step1">Crop & State Notification</div>
+      </div>
+      <div class="process-step" id="step-02" onclick="switchAdminView(2)">
+        <div class="step-num">02</div>
+        <div class="step-text" data-i18n="step2">Farmer Pre-Registration</div>
+      </div>
+      <div class="process-step" id="step-03" onclick="switchAdminView(3)">
+        <div class="step-num">03</div>
+        <div class="step-text" data-i18n="step3">Slot Allotment</div>
+      </div>
+      <div class="process-step active" id="step-04" onclick="switchAdminView(4)">
+        <div class="step-num">04</div>
+        <div class="step-text" data-i18n="step4">Arrival & Quality Check</div>
+      </div>
+      <div class="process-step" id="step-05" onclick="switchAdminView(5)">
+        <div class="step-num">05</div>
+        <div class="step-text" data-i18n="step5">Digital Weighment</div>
+      </div>
+      <div class="process-step" id="step-06" onclick="switchAdminView(6)">
+        <div class="step-num">06</div>
+        <div class="step-text" data-i18n="step6">DBT Payment</div>
+      </div>
+      <div class="process-step" id="step-07" onclick="switchAdminView(7)">
+        <div class="step-num">07</div>
+        <div class="step-text" data-i18n="step7">Storage & Disposal</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+
+    <!-- Top Summary Metrics -->
+    <div class="metrics-row">
+      <div class="metric-card">
+        <div class="metric-title">Today's Capacity Load</div>
+        <div class="metric-val">180 / 300 <span style="font-size:13px; color:var(--text-muted);">Tractors</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Active Geofenced Tokens (<500m)</div>
+        <div class="metric-val" id="activeGeofencedCount">1 Token</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">AI Predicted Gate Wait</div>
+        <div class="metric-val" style="color:var(--amber-warn);">12 Mins</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">PFMS DBT Disbursed Today</div>
+        <div class="metric-val" style="color:#1d4ed8;">₹1.85 Cr</div>
+      </div>
+    </div>
+
+    <!-- End metrics row -->
+  </div>
+
+  <!-- View 01 -->
+  <div id="adminView1" class="admin-view" style="display:none; padding:0 28px 20px;">
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">🌱 <span data-i18n="step1Title">Crop & State Notification Settings</span></div>
+      <p style="color:var(--text-muted); font-size:14px;">Configure active MSP crops, minimum moisture thresholds, and state quotas here.</p>
+      <div style="margin-top:16px;">
+        <button class="btn btn-green" style="width:auto; padding:8px 16px;">+ Add Notification</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View 02 -->
+  <div id="adminView2" class="admin-view" style="display:none; padding:0 28px 20px;">
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">📝 <span data-i18n="step2Title">Farmer Pre-Registration (KYC)</span></div>
+      <p style="color:var(--text-muted); font-size:14px;">Review and Approve/Reject KYC applications from farmers.</p>
+      <div class="table-responsive" style="margin-top:16px;">
+        <table>
+          <thead><tr><th class="dark:text-slate-300">Farmer ID</th><th class="dark:text-slate-300">Name</th><th class="dark:text-slate-300">Aadhaar Status</th><th class="dark:text-slate-300">PM-KISAN Status</th><th class="dark:text-slate-300">e-NAM ID</th><th class="dark:text-slate-300">Action</th></tr></thead>
+          <tbody>
+            <tr class="dark:bg-slate-900 border-b dark:border-slate-800">
+              <td class="dark:text-slate-300 font-mono text-sm">F-1029</td>
+              <td class="dark:text-slate-300">Suresh Kumar</td>
+              <td><span class="badge badge-geofenced">Verified</span></td>
+              <td><span class="badge badge-geofenced bg-sky-100 text-sky-800 border-sky-300">Matched</span></td>
+              <td class="dark:text-slate-300 font-mono text-xs text-sky-600">ENAM-4921</td>
+              <td><button class="btn btn-blue" style="width:auto; padding:4px 8px;">View Profile</button></td>
+            </tr>
+            <tr class="dark:bg-slate-900 border-b dark:border-slate-800">
+              <td class="dark:text-slate-300 font-mono text-sm">F-1030</td>
+              <td class="dark:text-slate-300">Anil Desai</td>
+              <td><span class="badge badge-booked">Pending</span></td>
+              <td><span class="badge badge-booked bg-red-100 text-red-800 border-red-300">Mismatch</span></td>
+              <td class="dark:text-slate-300 font-mono text-xs text-gray-400">Not Registered</td>
+              <td><button class="btn btn-blue" style="width:auto; padding:4px 8px;">Review</button></td>
+            </tr>
+            <tr class="dark:bg-slate-900 border-b dark:border-slate-800">
+              <td class="dark:text-slate-300 font-mono text-sm">F-1031</td>
+              <td class="dark:text-slate-300">Rajesh Sharma</td>
+              <td><span class="badge badge-booked" style="background:#fef08a; color:#854d0e;">In Review</span></td>
+              <td><span class="badge badge-geofenced bg-sky-100 text-sky-800 border-sky-300">Matched</span></td>
+              <td class="dark:text-slate-300 font-mono text-xs text-sky-600">ENAM-1042</td>
+              <td><button class="btn btn-blue" style="width:auto; padding:4px 8px;">Review</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- View 03 -->
+  <div id="adminView3" class="admin-view" style="display:none; padding:0 28px 20px;">
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">🕒 <span data-i18n="step3Title">Slot Allotment Manager</span></div>
+      <p style="color:var(--text-muted); font-size:14px;">Adjust hourly gate limits and view allocated token quotas.</p>
+      <div style="margin-top:16px; display:flex; gap:20px; flex-wrap: wrap;">
+        <div class="metric-card dark:bg-slate-900 dark:border-slate-800" style="flex:1; min-width: 250px;">
+          <div class="metric-title dark:text-slate-300">Morning Quota (8 AM - 12 PM)</div>
+          <div class="flex justify-between items-end mb-2 mt-4">
+            <div class="metric-val text-sky-600 dark:text-sky-400" style="margin-bottom:0;">120 <span class="text-sm text-gray-500 dark:text-slate-400">/ 150</span></div>
+            <div class="text-sm text-gray-600 dark:text-slate-400 font-bold">80%</div>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-3 dark:bg-slate-700">
+            <div class="bg-sky-600 h-3 rounded-full" style="width: 80%"></div>
+          </div>
+        </div>
+        <div class="metric-card dark:bg-slate-900 dark:border-slate-800" style="flex:1; min-width: 250px;">
+          <div class="metric-title dark:text-slate-300">Afternoon Quota (1 PM - 5 PM)</div>
+          <div class="flex justify-between items-end mb-2 mt-4">
+            <div class="metric-val text-blue-600 dark:text-blue-400" style="margin-bottom:0;">60 <span class="text-sm text-gray-500 dark:text-slate-400">/ 150</span></div>
+            <div class="text-sm text-gray-600 dark:text-slate-400 font-bold">40%</div>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-3 dark:bg-slate-700">
+            <div class="bg-blue-600 h-3 rounded-full" style="width: 40%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View 04 -->
+  <div id="adminView4" class="admin-view" style="display:block;">
+    <div class="dashboard-grid" style="padding-top:0;">
+      <div style="grid-column: 1 / -1;">
+        <div class="card">
+          <div class="card-title">
+            <span>🚜 <span data-i18n="liveQueue">Live Mandi Tractor Queue (Geofence Monitored)</span></span>
+            <button class="btn btn-blue" style="width:auto; padding:4px 10px; font-size:11px;" onclick="refreshQueue()">Refresh Queue</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Token</th><th>Farmer Name</th><th>Crop / Qtl</th><th>Time Slot</th><th>Distance</th><th>Geofence Status</th><th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="queueTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:20px;">
+          <div class="card-title">
+            <span>🛠️ <span data-i18n="grievances">Farmer Grievance Tickets (DoCA Support)</span></span>
+            <button class="btn btn-blue" style="width:auto; padding:4px 10px; font-size:11px;" onclick="loadGrievances()">Refresh Tickets</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>Ticket ID</th><th>Farmer</th><th>DoCA Category</th><th>Description</th><th>PFMS DBT Status</th><th>Status</th></tr></thead>
+              <tbody id="grievanceTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View 05 -->
+  <div id="adminView5" class="admin-view" style="display:none;">
+    <div class="dashboard-grid" style="padding-top:0;">
+      <div style="grid-column: 1 / -1; max-width:600px; margin:0 auto;">
+        <div class="card">
+          <div class="card-title">⚖️ <span data-i18n="step5Title">Digital Weighbridge & Quality Grading</span></div>
+          <div class="scale-box">
+            <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">📶 Digital Bluetooth Scale Stream</div>
+            <div class="scale-val" id="scaleDisplay">5,200.00 KG</div>
+            <button class="btn btn-blue" style="margin-top:8px; padding:6px 10px; font-size:12px;" onclick="streamBluetoothScale()">📲 Stream Scale Weight Mock</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gross Vehicle Weight (kg)</label>
+            <input type="number" id="grossWeight" class="form-control" value="5200" oninput="recalculateQuality()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tare Vehicle Weight (kg)</label>
+            <input type="number" id="tareWeight" class="form-control" value="1200" oninput="recalculateQuality()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Net Crop Weight (kg)</label>
+            <input type="number" id="netWeight" class="form-control" value="4000" readonly style="background:#f1f5f9; color:var(--primary-blue); font-weight:700;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Moisture Content (%): <span id="moistureVal" style="color:var(--primary-blue); font-weight:700;">11.5%</span></label>
+            <input type="range" id="moistureInput" min="8" max="20" step="0.1" value="11.5" style="width:100%;" oninput="recalculateQuality()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Foreign Matter (%): <span id="foreignVal" style="color:var(--primary-blue); font-weight:700;">1.2%</span></label>
+            <input type="range" id="foreignInput" min="0" max="5" step="0.1" value="1.2" style="width:100%;" oninput="recalculateQuality()">
+          </div>
+          <div style="background:var(--surface-light); border:1px solid #bbf7d0; border-radius:10px; padding:12px; margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:13px;">
+              <span style="color:var(--text-muted);">Assigned Quality Grade:</span>
+              <strong id="gradeDisplay" style="color:var(--primary-blue);">Grade A (MSP ₹2,275/Qtl)</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:13px;">
+              <span style="color:var(--text-muted);">Calculated Total Payout:</span>
+              <strong id="payoutDisplay" style="color:var(--text-dark); font-size:16px;">₹91,000.00</strong>
+            </div>
+          </div>
+          <button class="btn btn-green" onclick="submitQualityAndDisburse()">💳 Approve Quality & Disburse PFMS DBT Payout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View 06 -->
+  <div id="adminView6" class="admin-view" style="display:none; padding:0 28px 20px;">
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">💸 <span data-i18n="step6Title">PFMS DBT Payment Console</span></div>
+      <p style="color:var(--text-muted); font-size:14px;">Generate digital sale slips and trigger bank payment release milestones.</p>
+      <div style="margin-top:16px;">
+         <button class="btn btn-blue" style="width:auto; padding:8px 16px;">Sync with PFMS Server</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View 07 -->
+  <div id="adminView7" class="admin-view" style="display:none; padding:0 28px 20px;">
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">🏭 <span data-i18n="step7Title">Storage & Disposal Management</span></div>
+      <p style="color:var(--text-muted); font-size:14px;">Manage warehouse bay assignments and buffer stock dispatch logs.</p>
+      <div style="margin-top:16px; display:flex; gap:20px;">
+        <div class="metric-card" style="flex:1;">
+          <div class="metric-title">Warehouse A (FCI Godown)</div>
+          <div class="metric-val" style="color:var(--amber-warn);">85% Full</div>
+        </div>
+        <div class="metric-card" style="flex:1;">
+          <div class="metric-title">Dispatch Queue</div>
+          <div class="metric-val">12 Trucks</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let activeSlotId = 1;
+
+    function switchAdminView(stepId) {
+      for (let i = 1; i <= 7; i++) {
+        const stepTab = document.getElementById('step-0' + i);
+        if (stepTab) stepTab.classList.remove('active');
+        const viewContainer = document.getElementById('adminView' + i);
+        if (viewContainer) viewContainer.style.display = 'none';
+      }
+      
+      const activeTab = document.getElementById('step-0' + stepId);
+      if (activeTab) activeTab.classList.add('active');
+      
+      const activeView = document.getElementById('adminView' + stepId);
+      if (activeView) activeView.style.display = 'block';
+    }
+
+    function setFontSize(size) {
+      document.documentElement.setAttribute('data-font-size', size);
+      localStorage.setItem('doca_font_size', size);
+    }
+
+    function toggleContrast() {
+      document.documentElement.classList.toggle('dark');
+      document.body.classList.toggle('high-contrast');
+      const isHc = document.documentElement.classList.contains('dark');
+      localStorage.setItem('doca_contrast', isHc ? 'active' : 'normal');
+      document.getElementById('themeToggleBtn').innerText = isHc ? '☀️ Light Mode' : '🌙 Dark Mode';
+    }
+
+    (function initAccessibilitySettings() {
+      const size = localStorage.getItem('doca_font_size') || 'normal';
+      setFontSize(size);
+      const isHc = localStorage.getItem('doca_contrast') === 'active';
+      if (isHc) {
+        document.documentElement.classList.add('dark');
+        document.body.classList.add('high-contrast');
+      }
+      document.getElementById('themeToggleBtn').innerText = isHc ? '☀️ Light Mode' : '🌙 Dark Mode';
+    })();
+
+    const adminDict = {
+      'en-IN': {
+        title: 'Harvest Heist (DoCA & FCI Smart Procurement Network)',
+        step1: 'Crop & State Notification', step1Title: 'Crop & State Notification Settings',
+        step2: 'Farmer Pre-Registration', step2Title: 'Farmer Pre-Registration (KYC)',
+        step3: 'Slot Allotment', step3Title: 'Slot Allotment Manager',
+        step4: 'Arrival & Quality Check', liveQueue: 'Live Mandi Tractor Queue (Geofence Monitored)', grievances: 'Farmer Grievance Tickets (DoCA Support)',
+        step5: 'Digital Weighment', step5Title: 'Digital Weighbridge & Quality Grading',
+        step6: 'DBT Payment', step6Title: 'PFMS DBT Payment Console',
+        step7: 'Storage & Disposal', step7Title: 'Storage & Disposal Management'
+      },
+      'hi-IN': {
+        title: 'हार्वेस्ट हाइस्ट (DoCA और FCI स्मार्ट खरीद नेटवर्क)',
+        step1: 'फसल और राज्य अधिसूचना', step1Title: 'फसल और राज्य अधिसूचना सेटिंग्स',
+        step2: 'किसान पूर्व-पंजीकरण', step2Title: 'किसान पूर्व-पंजीकरण (केवाईसी)',
+        step3: 'स्लॉट आवंटन', step3Title: 'स्लॉट आवंटन प्रबंधक',
+        step4: 'आगमन और गुणवत्ता जांच', liveQueue: 'लाइव मंडी ट्रैक्टर कतार (जियोफेंस मॉनिटर)', grievances: 'किसान शिकायत टिकट (DoCA सहायता)',
+        step5: 'डिजिटल वजन', step5Title: 'डिजिटल तौल-कांटा और गुणवत्ता ग्रेडिंग',
+        step6: 'DBT भुगतान', step6Title: 'PFMS DBT भुगतान कंसोल',
+        step7: 'भंडारण और निपटान', step7Title: 'भंडारण और निपटान प्रबंधन'
+      },
+      'mr-IN': {
+        title: 'हार्वेस्ट हाइस्ट (DoCA आणि FCI स्मार्ट खरेदी नेटवर्क)',
+        step1: 'पीक आणि राज्य अधिसूचना', step1Title: 'पीक आणि राज्य अधिसूचना सेटिंग्ज',
+        step2: 'शेतकरी पूर्व-नोंदणी', step2Title: 'शेतकरी पूर्व-नोंदणी (KYC)',
+        step3: 'स्लॉट वाटप', step3Title: 'स्लॉट वाटप व्यवस्थापक',
+        step4: 'आगमन आणि गुणवत्ता तपासणी', liveQueue: 'थेट मंडी ट्रॅक्टर रांग (जिओफेन्स मॉनिटर केलेले)', grievances: 'शेतकरी तक्रार तिकीट (DoCA समर्थन)',
+        step5: 'डिजिटल वजन', step5Title: 'डिजिटल वजन काटा आणि गुणवत्ता ग्रेडिंग',
+        step6: 'DBT पेमेंट', step6Title: 'PFMS DBT पेमेंट कन्सोल',
+        step7: 'साठवण आणि विल्हेवाट', step7Title: 'साठवण आणि विल्हेवाट व्यवस्थापन'
+      },
+      'pa-IN': {
+        title: 'ਹਾਰਵੈਸਟ ਹਾਈਸਟ (DoCA ਅਤੇ FCI ਸਮਾਰਟ ਖਰੀਦ ਨੈੱਟਵਰਕ)',
+        step1: 'ਫਸਲ ਅਤੇ ਰਾਜ ਨੋਟੀਫਿਕੇਸ਼ਨ', step1Title: 'ਫਸਲ ਅਤੇ ਰਾਜ ਨੋਟੀਫਿਕੇਸ਼ਨ ਸੈਟਿੰਗਜ਼',
+        step2: 'ਕਿਸਾਨ ਪੂਰਵ-ਰਜਿਸਟ੍ਰੇਸ਼ਨ', step2Title: 'ਕਿਸਾਨ ਪੂਰਵ-ਰਜਿਸਟ੍ਰੇਸ਼ਨ (KYC)',
+        step3: 'ਸਲਾਟ ਅਲਾਟਮੈਂਟ', step3Title: 'ਸਲਾਟ ਅਲਾਟਮੈਂਟ ਮੈਨੇਜਰ',
+        step4: 'ਆਗਮਨ ਅਤੇ ਗੁਣਵੱਤਾ ਜਾਂਚ', liveQueue: 'ਲਾਈਵ ਮੰਡੀ ਟਰੈਕਟਰ ਕਤਾਰ (ਜੀਓਫੈਂਸ ਨਿਗਰਾਨੀ)', grievances: 'ਕਿਸਾਨ ਸ਼ਿਕਾਇਤ ਟਿਕਟਾਂ (DoCA ਸਹਾਇਤਾ)',
+        step5: 'ਡਿਜੀਟਲ ਵਜ਼ਨ', step5Title: 'ਡਿਜੀਟਲ ਵੇਅਬ੍ਰਿਜ ਅਤੇ ਗੁਣਵੱਤਾ ਗ੍ਰੇਡਿੰਗ',
+        step6: 'DBT ਭੁਗਤਾਨ', step6Title: 'PFMS DBT ਭੁਗਤਾਨ ਕੰਸੋਲ',
+        step7: 'ਸਟੋਰੇਜ ਅਤੇ ਨਿਪਟਾਰਾ', step7Title: 'ਸਟੋਰੇਜ ਅਤੇ ਨਿਪਟਾਰਾ ਪ੍ਰਬੰਧਨ'
+      },
+      'ta-IN': {
+        title: 'ஹார்வெஸ்ட் ஹெய்ஸ்ட் (DoCA மற்றும் FCI ஸ்மார்ட் கொள்முதல் நெட்வொர்க்)',
+        step1: 'பயிர் & மாநில அறிவிப்பு', step1Title: 'பயிர் & மாநில அறிவிப்பு அமைப்புகள்',
+        step2: 'விவசாயி முன் பதிவு', step2Title: 'விவசாயி முன் பதிவு (KYC)',
+        step3: 'ஸ்லாட் ஒதுக்கீடு', step3Title: 'ஸ்லாட் ஒதுக்கீடு மேலாளர்',
+        step4: 'வருகை & தர சோதனை', liveQueue: 'நேரடி மண்டி டிராக்டர் வரிசை (ஜியோஃபென்ஸ் கண்காணிக்கப்படுகிறது)', grievances: 'விவசாயி குறை தீர்க்கும் டிக்கெட்டுகள் (DoCA ஆதரவு)',
+        step5: 'டிஜிட்டல் எடை', step5Title: 'டிஜிட்டல் எடை பாலம் & தர தரப்படுத்தல்',
+        step6: 'DBT கட்டணம்', step6Title: 'PFMS DBT கட்டண கன்சோல்',
+        step7: 'சேமிப்பு & அகற்றல்', step7Title: 'சேமிப்பு & அகற்றல் மேலாண்மை'
+      },
+      'te-IN': {
+        title: 'హార్వెస్ట్ హీస్ట్ (DoCA మరియు FCI స్మార్ట్ ప్రొక్యూర్‌మెంట్ నెట్‌వర్క్)',
+        step1: 'పంట & రాష్ట్ర నోటిఫికేషన్', step1Title: 'పంట & రాష్ట్ర నోటిఫికేషన్ సెట్టింగ్‌లు',
+        step2: 'రైతు ముందస్తు నమోదు', step2Title: 'రైతు ముందస్తు నమోదు (KYC)',
+        step3: 'స్లాట్ కేటాయింపు', step3Title: 'స్లాట్ కేటాయింపు మేనేజర్',
+        step4: 'రాక & నాణ్యత తనిఖీ', liveQueue: 'లైవ్ మండి ట్రాక్టర్ క్యూ (జియోఫెన్స్ పర్యవేక్షించబడింది)', grievances: 'రైతు ఫిర్యాదు టిక్కెట్లు (DoCA మద్దతు)',
+        step5: 'డిజిటల్ బరువు', step5Title: 'డిజిటల్ వెయిబ్రిడ్జ్ & క్వాలిటీ గ్రేడింగ్',
+        step6: 'DBT చెల్లింపు', step6Title: 'PFMS DBT చెల్లింపు కన్సోల్',
+        step7: 'నిల్వ & పారవేయడం', step7Title: 'నిల్వ & పారవేయడం నిర్వహణ'
+      },
+      'bn-IN': {
+        title: 'হারভেস্ট হেইস্ট (DoCA এবং FCI স্মার্ট প্রকিউরমেন্ট নেটওয়ার্ক)',
+        step1: 'ফসল এবং রাজ্য বিজ্ঞপ্তি', step1Title: 'ফসল এবং রাজ্য বিজ্ঞপ্তি সেটিংস',
+        step2: 'কৃষক প্রাক-নিবন্ধন', step2Title: 'কৃষক প্রাক-নিবন্ধন (KYC)',
+        step3: 'স্লট বরাদ্দ', step3Title: 'স্লট বরাদ্দ পরিচালক',
+        step4: 'আগমন এবং গুণমান পরীক্ষা', liveQueue: 'লাইভ মন্ডি ট্রাক্টর সারি (জিওফেন্স নিরীক্ষিত)', grievances: 'কৃষক অভিযোগ টিকিট (DoCA সমর্থন)',
+        step5: 'ডিজিটাল ওজন', step5Title: 'ডিজিটাল ওয়েব্রিজ এবং গুণমান গ্রেডিং',
+        step6: 'DBT পেমেন্ট', step6Title: 'PFMS DBT পেমেন্ট কনসোল',
+        step7: 'সঞ্চয়স্থান এবং নিষ্পত্তি', step7Title: 'সঞ্চয়স্থান এবং নিষ্পত্তি ব্যবস্থাপনা'
+      },
+      'gu-IN': {
+        title: 'હાર્વેસ્ટ હીસ્ટ (DoCA અને FCI સ્માર્ટ પ્રોક્યોરમેન્ટ નેટવર્ક)',
+        step1: 'પાક અને રાજ્ય સૂચના', step1Title: 'પાક અને રાજ્ય સૂચના સેટિંગ્સ',
+        step2: 'ખેડૂત પૂર્વ-નોંધણી', step2Title: 'ખેડૂત પૂર્વ-નોંધણી (KYC)',
+        step3: 'સ્લોટ ફાળવણી', step3Title: 'સ્લોટ ફાળવણી મેનેજર',
+        step4: 'આગમન અને ગુણવત્તા તપાસ', liveQueue: 'લાઇવ મંડી ટ્રેક્ટર કતાર (જીઓફેન્સ મોનિટર કરેલ)', grievances: 'ખેડૂત ફરિયાદ ટિકિટ (DoCA આધાર)',
+        step5: 'ડિજિટલ વજન', step5Title: 'ડિજિટલ વેઇબ્રિજ અને ક્વોલિટી ગ્રેડિંગ',
+        step6: 'DBT ચુકવણી', step6Title: 'PFMS DBT ચુકવણી કન્સોલ',
+        step7: 'સંગ્રહ અને નિકાલ', step7Title: 'સંગ્રહ અને નિકાલ વ્યવસ્થાપન'
+      },
+      'kn-IN': {
+        title: 'ಹಾರ್ವೆಸ್ಟ್ ಹೈಸ್ಟ್ (DoCA ಮತ್ತು FCI ಸ್ಮಾರ್ಟ್ ಪ್ರೊಕ್ಯೂರ್‌ಮೆಂಟ್ ನೆಟ್‌ವರ್ಕ್)',
+        step1: 'ಬೆಳೆ ಮತ್ತು ರಾಜ್ಯ ಅಧಿಸೂಚನೆ', step1Title: 'ಬೆಳೆ ಮತ್ತು ರಾಜ್ಯ ಅಧಿಸೂಚನೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು',
+        step2: 'ರೈತ ಪೂರ್ವ ನೋಂದಣಿ', step2Title: 'ರೈತ ಪೂರ್ವ ನೋಂದಣಿ (KYC)',
+        step3: 'ಸ್ಲಾಟ್ ಹಂಚಿಕೆ', step3Title: 'ಸ್ಲಾಟ್ ಹಂಚಿಕೆ ನಿರ್ವಾಹಕ',
+        step4: 'ಆಗಮನ ಮತ್ತು ಗುಣಮಟ್ಟ ಪರಿಶೀಲನೆ', liveQueue: 'ಲೈವ್ ಮಂಡಿ ಟ್ರ್ಯಾಕ್ಟರ್ ಕ್ಯೂ (ಜಿಯೋಫೆನ್ಸ್ ಮೇಲ್ವಿಚಾರಣೆ)', grievances: 'ರೈತ ಕುಂದುಕೊರತೆ ಟಿಕೆಟ್‌ಗಳು (DoCA ಬೆಂಬಲ)',
+        step5: 'ಡಿಜಿಟಲ್ ತೂಕ', step5Title: 'ಡಿಜಿಟಲ್ ವೇಬ್ರಿಡ್ಜ್ ಮತ್ತು ಗುಣಮಟ್ಟದ ಗ್ರೇಡಿಂಗ್',
+        step6: 'DBT ಪಾವತಿ', step6Title: 'PFMS DBT ಪಾವತಿ ಕನ್ಸೋಲ್',
+        step7: 'ಶೇಖರಣೆ ಮತ್ತು ವಿಲೇವಾರಿ', step7Title: 'ಶೇಖರಣೆ ಮತ್ತು ವಿಲೇವಾರಿ ನಿರ್ವಹಣೆ'
+      }
+    };
+
+    function changeLanguage(lang) {
+      localStorage.setItem('doca_lang', lang);
+      const dict = adminDict[lang] || adminDict['en-IN'];
+      document.getElementById('adminTitle').innerText = dict.title;
+      
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) el.innerText = dict[key];
+      });
+
+      if (window.voiceAssistant) {
+        window.voiceAssistant.setLanguage(lang);
+      }
+    }
+
+    async function refreshQueue() {
+      try {
+        // Dummy Realistic Indian Data for Live Queue
+        const queue = [
+          { id: 1, token_number: "T-801", farmer_name: "Amit Patel", mobile: "9876543210", crop_type: "Wheat", allocated_crop_qty: 45, hour_slot: "08:00 AM", is_geofenced: 1, distance_to_mandi_meters: 120 },
+          { id: 2, token_number: "T-802", farmer_name: "Vijay Singh", mobile: "8765432109", crop_type: "Paddy", allocated_crop_qty: 60, hour_slot: "09:00 AM", is_geofenced: 1, distance_to_mandi_meters: 340 },
+          { id: 3, token_number: "T-803", farmer_name: "Deepak Sharma", mobile: "7654321098", crop_type: "Chana", allocated_crop_qty: 30, hour_slot: "10:00 AM", is_geofenced: 0, distance_to_mandi_meters: 1500 },
+          { id: 4, token_number: "T-804", farmer_name: "Sunil Verma", mobile: "6543210987", crop_type: "Wheat", allocated_crop_qty: 55, hour_slot: "11:00 AM", is_geofenced: 0, distance_to_mandi_meters: 3200 }
+        ];
+        
+        const tbody = document.getElementById('queueTableBody');
+        tbody.innerHTML = '';
+
+        let activeCount = 0;
+        queue.forEach(item => {
+          if (item.is_geofenced) activeCount++;
+          const tr = document.createElement('tr');
+          tr.className = "dark:bg-slate-900 border-b dark:border-slate-800";
+          const isGeofenced = item.is_geofenced === 1 || item.status === 'GEOFENCED_ACTIVE';
+          const distanceStr = isGeofenced ? `<span class="text-sky-700 dark:text-sky-400 font-bold">${item.distance_to_mandi_meters}m</span>` : `<span class="dark:text-slate-300">${item.distance_to_mandi_meters}m</span>`;
+          const badgeHtml = isGeofenced ? `<span class="badge badge-geofenced">✓ Inside 500m</span>` : `<span class="badge badge-booked">Outside Gate</span>`;
+
+          tr.innerHTML = `
+            <td><strong class="text-sky-700 dark:text-sky-400">${item.token_number}</strong></td>
+            <td class="dark:text-slate-300">${item.farmer_name}<br><span class="text-[10px] text-gray-500 dark:text-slate-400">${item.mobile}</span></td>
+            <td class="dark:text-slate-300">${item.crop_type} (${item.allocated_crop_qty} Qtl)</td>
+            <td class="dark:text-slate-300">${item.hour_slot}</td>
+            <td>${distanceStr}</td>
+            <td>${badgeHtml}</td>
+            <td>
+              <button class="btn btn-blue" style="padding:4px 8px; font-size:11px;" onclick="selectTractorForWeighing(${item.id})">
+                Select
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById('activeGeofencedCount').innerText = activeCount + " Token(s)";
+      } catch(e) {
+        console.error("Failed to load queue:", e);
+      }
+    }
+
+    async function loadGrievances() {
+      try {
+        // Dummy Realistic Indian Grievances Data
+        const grievances = [
+          { id: "G-101", farmer_name: "Karan Yadav", category: "Payment Delay", description: "DBT payment not received after 72 hours", pfms_status: "Pending UIDAI Ver.", status: "Open" },
+          { id: "G-102", farmer_name: "Rahul Meena", category: "Quality Grading", description: "Disputed moisture content reading (15% vs 13%)", pfms_status: "N/A", status: "In Progress" },
+          { id: "G-103", farmer_name: "Sanjay Gupta", category: "Slot Issue", description: "Missed slot due to heavy rain, requesting reschedule", pfms_status: "N/A", status: "Resolved" }
+        ];
+        
+        const tbody = document.getElementById('grievanceTableBody');
+        tbody.innerHTML = '';
+        grievances.forEach(g => {
+          const tr = document.createElement('tr');
+          tr.className = "dark:bg-slate-900 border-b dark:border-slate-800";
+          
+          let badgeClass = "badge-booked"; // default blue/pending
+          if(g.status === "Open") badgeClass = "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+          if(g.status === "In Progress") badgeClass = "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
+          if(g.status === "Resolved") badgeClass = "badge-geofenced";
+
+          let pfmsBadge = "bg-gray-100 text-gray-800";
+          if(g.pfms_status.includes("Pending")) pfmsBadge = "bg-orange-100 text-orange-800";
+          if(g.pfms_status === "Success") pfmsBadge = "bg-sky-100 text-sky-800";
+          
+          tr.innerHTML = `
+            <td class="dark:text-slate-300 font-mono text-sm"><strong>${g.id}</strong></td>
+            <td class="dark:text-slate-300">${g.farmer_name}</td>
+            <td class="dark:text-slate-300"><span class="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-xs border dark:border-slate-700">${g.category}</span></td>
+            <td class="dark:text-slate-300 text-sm">${g.description}</td>
+            <td><span class="px-2 py-1 text-xs rounded-full ${pfmsBadge}">${g.pfms_status}</span></td>
+            <td><span class="badge ${badgeClass}">${g.status}</span></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch(e) {
+        console.error("Failed to load grievances:", e);
+      }
+    }
+
+    function selectTractorForWeighing(slotId) {
+      activeSlotId = slotId;
+      alert("Tractor Slot #" + slotId + " selected for weighbridge & quality inspection.");
+    }
+
+    function streamBluetoothScale() {
+      const randomGross = (4800 + Math.random() * 800).toFixed(2);
+      document.getElementById('grossWeight').value = randomGross;
+      document.getElementById('scaleDisplay').innerText = parseFloat(randomGross).toLocaleString('en-IN') + " KG";
+      recalculateQuality();
+    }
+
+    function recalculateQuality() {
+      const gross = parseFloat(document.getElementById('grossWeight').value) || 0;
+      const tare = parseFloat(document.getElementById('tareWeight').value) || 0;
+      const net = Math.max(0, gross - tare);
+      document.getElementById('netWeight').value = net;
+
+      const moisture = parseFloat(document.getElementById('moistureInput').value);
+      const foreign = parseFloat(document.getElementById('foreignInput').value);
+
+      document.getElementById('moistureVal').innerText = moisture.toFixed(1) + "%";
+      document.getElementById('foreignVal').innerText = foreign.toFixed(1) + "%";
+
+      let grade = "Grade A";
+      let rate = 2275.00;
+      if (moisture > 14.0 || foreign > 2.5) {
+        grade = "Grade C";
+        rate = 1980.00;
+      } else if (moisture > 12.0 || foreign > 1.5) {
+        grade = "Grade B";
+        rate = 2150.00;
+      }
+
+      const quintals = net / 100.0;
+      const totalPayout = (quintals * rate);
+
+      document.getElementById('gradeDisplay').innerText = `${grade} (MSP ₹${rate.toLocaleString('en-IN')}/Qtl)`;
+      document.getElementById('payoutDisplay').innerText = `₹${totalPayout.toLocaleString('en-IN', {maximumFractionDigits:2})}`;
+    }
+
+    async function submitQualityAndDisburse() {
+      const gross = parseFloat(document.getElementById('grossWeight').value);
+      const tare = parseFloat(document.getElementById('tareWeight').value);
+      const moisture = parseFloat(document.getElementById('moistureInput').value);
+      const foreign = parseFloat(document.getElementById('foreignInput').value);
+
+      const qualRes = await fetch('/api/v1/quality/submit', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          slot_id: activeSlotId,
+          gross_weight: gross,
+          tare_weight: tare,
+          moisture_pct: moisture,
+          foreign_matter_pct: foreign
+        })
+      });
+      const qualData = await qualRes.json();
+
+      const pfmsRes = await fetch('/api/v1/pfms/disburse', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ slot_id: activeSlotId })
+      });
+      const pfmsData = await pfmsRes.json();
+
+      if (pfmsData.success) {
+        alert(`🎉 Quality Approved & PFMS Disbursement Complete!\nPayout Amount: ₹${qualData.total_payout_inr.toLocaleString('en-IN')}\nPFMS Ref UTR: ${pfmsData.pfms_response.pfms_ref_no}`);
+        refreshQueue();
+      }
+    }
+
+    async function seedDemoData() {
+      await fetch('/api/v1/seed', {method: 'POST'});
+      alert("Database re-seeded successfully with Mandi and Farmer records!");
+      refreshQueue();
+      loadGrievances();
+    }
+
+    // Init Engine
+    refreshQueue();
+    // Voice Assistant Hooks
+    window.triggerQueueStatus = function() {
+      refreshQueue();
+    };
+  </script>
+  <script src="/assets/voice-assistant.js"></script>
+</body>
+</html>
