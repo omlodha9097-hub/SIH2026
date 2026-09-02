@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Harvest Heist (DoCA & FCI Smart Procurement Network)</title>
+  <title>AgriGrow (DoCA & FCI Smart Procurement Network)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary-blue: #0284c7; /* Sky 600 */
-      --primary-hover: #0369a1; /* Sky 700 */
-      --surface-light: #f0f9ff; /* Sky 50 */
+      --primary-blue: #15803d; /* Reverted to green */
+      --primary-hover: #166534;
+      --surface-light: #f0fdf4;
       --surface-card: #ffffff;
       --border-light: #cbd5e1;
       --text-dark: #0f172a;
@@ -27,8 +27,8 @@
       --text-dark: #f8fafc; /* Slate 50 */
       --text-slate: #cbd5e1; /* Slate 300 */
       --text-muted: #94a3b8; /* Slate 400 */
-      --surface-light: #022c22;
-      --primary-blue: #38bdf8; /* Sky 400 */
+      --surface-light: #052e16;
+      --primary-blue: #22c55e;
     }
 
     html[data-font-size="small"] { font-size: 14px; }
@@ -221,7 +221,7 @@
 
     .badge { display: inline-block; padding: 4px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
     .badge-booked { background: #fef3c7; color: #d97706; }
-    .badge-geofenced { background: #e0f2fe; color: #0369a1; }
+    .badge-geofenced { background: #dcfce7; color: #15803d; }
     .badge-completed { background: #dbeafe; color: #1d4ed8; }
 
     /* Controls */
@@ -265,13 +265,13 @@
     <div class="gov-brand">
       <div class="emblem-icon">🏛️</div>
       <div>
-        <div class="gov-title-main" id="adminTitle">Harvest Heist (DoCA & FCI Smart Procurement Network)</div>
+        <div class="gov-title-main" id="adminTitle">AgriGrow (DoCA & FCI Smart Procurement Network)</div>
         <div class="gov-subtitle">Department of Consumer Affairs (DoCA) & Food Corporation of India</div>
       </div>
     </div>
 
     <div class="header-controls">
-      <button class="contrast-btn" id="themeToggleBtn" onclick="toggleContrast()">🌙 Dark Mode</button>
+      <button class="contrast-btn" id="themeToggleBtn" onclick="toggleContrast()" style="font-size: 16px; padding: 6px 12px; margin-right: 10px;" title="Toggle Dark/Light Mode">🌙</button>
       
       <select class="lang-select" id="adminLangPicker" onchange="changeLanguage(this.value)">
         <option value="en-IN">🇬🇧 English</option>
@@ -285,7 +285,8 @@
         <option value="kn-IN">🇮🇳 ಕನ್ನಡ (Kannada)</option>
       </select>
 
-      <button class="btn btn-blue" style="width:auto; padding:6px 12px;" onclick="seedDemoData()">🔄 Reset Data</button>
+      <button class="btn btn-blue" style="width:auto; padding:6px 12px;" onclick="seedDemoData()">🔄</button>
+      <button class="logout-btn" onclick="window.location.href='/'" style="font-size: 13px; font-weight: 600; padding: 6px 12px; background: #fef2f2; color: #ef4444; border: none; border-radius: 6px; cursor: pointer; margin-left: 10px;">Log Out</button>
     </div>
   </header>
 
@@ -579,7 +580,7 @@
       document.body.classList.toggle('high-contrast');
       const isHc = document.documentElement.classList.contains('dark');
       localStorage.setItem('doca_contrast', isHc ? 'active' : 'normal');
-      document.getElementById('themeToggleBtn').innerText = isHc ? '☀️ Light Mode' : '🌙 Dark Mode';
+      document.getElementById('themeToggleBtn').innerText = isHc ? '☀️' : '🌙';
     }
 
     (function initAccessibilitySettings() {
@@ -590,12 +591,12 @@
         document.documentElement.classList.add('dark');
         document.body.classList.add('high-contrast');
       }
-      document.getElementById('themeToggleBtn').innerText = isHc ? '☀️ Light Mode' : '🌙 Dark Mode';
+      document.getElementById('themeToggleBtn').innerText = isHc ? '☀️' : '🌙';
     })();
 
     const adminDict = {
       'en-IN': {
-        title: 'Harvest Heist (DoCA & FCI Smart Procurement Network)',
+        title: 'AgriGrow (DoCA & FCI Smart Procurement Network)',
         step1: 'Crop & State Notification', step1Title: 'Crop & State Notification Settings',
         step2: 'Farmer Pre-Registration', step2Title: 'Farmer Pre-Registration (KYC)',
         step3: 'Slot Allotment', step3Title: 'Slot Allotment Manager',
@@ -605,7 +606,7 @@
         step7: 'Storage & Disposal', step7Title: 'Storage & Disposal Management'
       },
       'hi-IN': {
-        title: 'हार्वेस्ट हाइस्ट (DoCA और FCI स्मार्ट खरीद नेटवर्क)',
+        title: 'एग्रीग्रो (DoCA और FCI स्मार्ट खरीद नेटवर्क)',
         step1: 'फसल और राज्य अधिसूचना', step1Title: 'फसल और राज्य अधिसूचना सेटिंग्स',
         step2: 'किसान पूर्व-पंजीकरण', step2Title: 'किसान पूर्व-पंजीकरण (केवाईसी)',
         step3: 'स्लॉट आवंटन', step3Title: 'स्लॉट आवंटन प्रबंधक',
@@ -615,7 +616,7 @@
         step7: 'भंडारण और निपटान', step7Title: 'भंडारण और निपटान प्रबंधन'
       },
       'mr-IN': {
-        title: 'हार्वेस्ट हाइस्ट (DoCA आणि FCI स्मार्ट खरेदी नेटवर्क)',
+        title: 'एग्रीग्रो (DoCA आणि FCI स्मार्ट खरेदी नेटवर्क)',
         step1: 'पीक आणि राज्य अधिसूचना', step1Title: 'पीक आणि राज्य अधिसूचना सेटिंग्ज',
         step2: 'शेतकरी पूर्व-नोंदणी', step2Title: 'शेतकरी पूर्व-नोंदणी (KYC)',
         step3: 'स्लॉट वाटप', step3Title: 'स्लॉट वाटप व्यवस्थापक',

@@ -51,13 +51,42 @@ class MultilingualVoiceBot:
                 response_text = f"Hello! Recommended slot for {crop} tomorrow 09:00 - 10:00 AM. Reply YES to confirm booking."
 
         else:
-            intent = "GENERAL_QUERY"
-            if language == "mr":
-                response_text = "हार्वेस्ट हाइस्ट (Harvest Heist) मंडी खरेदी प्लॅटफॉर्मवर आपले स्वागत आहे. आपण स्लॉट बुकिंग किंवा टोकन स्थितीबद्दल विचारू शकता."
-            elif language == "hi":
-                response_text = "हार्वेस्ट हाइस्ट (Harvest Heist) मंडी खरीद प्लेटफॉर्म में आपका स्वागत है। आप स्लॉट बुकिंग या टोकन स्थिति के बारे में पूछ सकते हैं।"
+            # Check for general agricultural queries
+            if any(kw in text for kw in ["weather", "मौसम", "हवामान", "rain"]):
+                intent = "GENERAL_QUERY"
+                if language == "mr":
+                    response_text = "सध्या हवामान निरभ्र आहे, येत्या दोन दिवसांत पावसाची शक्यता नाही."
+                elif language == "hi":
+                    response_text = "वर्तमान में मौसम साफ है, अगले दो दिनों में बारिश की कोई संभावना नहीं है।"
+                else:
+                    response_text = "The weather is currently clear, with no rain expected in the next two days."
+            
+            elif any(kw in text for kw in ["msp", "price", "भाव", "दर", "rate"]):
+                intent = "GENERAL_QUERY"
+                if language == "mr":
+                    response_text = "गव्हाचा सध्याचा एमएसपी (MSP) 2275 रुपये प्रति क्विंटल आहे."
+                elif language == "hi":
+                    response_text = "गेहूं का वर्तमान एमएसपी (MSP) 2275 रुपये प्रति क्विंटल है।"
+                else:
+                    response_text = "The current MSP for Wheat is 2275 rupees per quintal."
+
+            elif any(kw in text for kw in ["payment", "पैसे", "pfms"]):
+                intent = "GENERAL_QUERY"
+                if language == "mr":
+                    response_text = "तुमचे पेमेंट PFMS द्वारे प्रक्रिया केले जात आहे. लवकरच खात्यात जमा होईल."
+                elif language == "hi":
+                    response_text = "आपका भुगतान PFMS के माध्यम से संसाधित किया जा रहा है। जल्द ही खाते में जमा होगा।"
+                else:
+                    response_text = "Your payment is being processed via PFMS and will be credited shortly."
+
             else:
-                response_text = "Welcome to Harvest Heist Mandi Procurement Platform. You can query slot booking or queue token status."
+                intent = "GENERAL_QUERY"
+                if language == "mr":
+                    response_text = "एग्रीग्रो (AgriGrow) मंडी खरेदी प्लॅटफॉर्मवर आपले स्वागत आहे. आपण स्लॉट बुकिंग, टोकन स्थिती, किंवा एमएसपी बद्दल विचारू शकता."
+                elif language == "hi":
+                    response_text = "एग्रीग्रो (AgriGrow) मंडी खरीद प्लेटफॉर्म में आपका स्वागत है। आप स्लॉट बुकिंग, टोकन स्थिति, या एमएसपी के बारे में पूछ सकते हैं।"
+                else:
+                    response_text = "Welcome to AgriGrow Mandi Procurement Platform. You can query slot booking, queue token status, or MSP rates."
 
         return {
             "input_text": audio_transcript_or_text,

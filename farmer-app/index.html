@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Harvest Heist | NAFED & FCI Procurement Portal</title>
+  <title>AgriGrow | NAFED & FCI Procurement Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary-blue: #0284c7; /* Sky 600 */
-      --primary-hover: #0369a1; /* Sky 700 */
-      --surface-light: #f0f9ff; /* Sky 50 */
+      --primary-blue: #15803d; /* Reverting to green, keeping variable name as is to avoid breaking refs */
+      --primary-hover: #166534;
+      --surface-light: #f0fdf4;
       --surface-card: #ffffff;
       --border-light: #e2e8f0;
       --text-dark: #0f172a;
@@ -29,8 +29,8 @@
       --text-dark: #f8fafc; /* Slate 50 */
       --text-slate: #cbd5e1; /* Slate 300 */
       --text-muted: #94a3b8; /* Slate 400 */
-      --surface-light: #022c22;
-      --primary-blue: #38bdf8; /* Sky 400 */
+      --surface-light: #052e16;
+      --primary-blue: #22c55e;
     }
 
     html[data-font-size="small"] { font-size: 14px; }
@@ -41,13 +41,22 @@
 
     body {
       background-color: #f8fafc;
+      background-image: 
+        linear-gradient(rgba(248, 250, 252, 0.75), rgba(248, 250, 252, 0.85)),
+        url('/assets/farmer_bg.jpg');
+      background-size: cover;
+      background-attachment: fixed;
       color: var(--text-dark);
       min-height: 100vh;
       padding-bottom: 100px;
     }
+    body.high-contrast {
+      background-image: 
+        linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95)),
+        url('/assets/farmer_bg.jpg');
+    }
     body.high-contrast, html.dark body { 
       background-color: #020617 !important; /* Tailwind slate-950 */
-      background-image: none !important;
     }
 
     .tiranga-bar {
@@ -159,7 +168,7 @@
     .grid-status { font-size: 11px; font-weight: 700; display: inline-block; padding: 4px 8px; border-radius: 12px; }
     
     .status-pending { background: var(--amber-bg); color: var(--amber-warn); border: 1px solid #fde68a; }
-    .status-done { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .status-done { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 
     /* Common Card for Forms */
     .card { 
@@ -174,7 +183,7 @@
     body.high-contrast .tabs { background: #1f2937; }
     .tab { flex: 1; padding: 8px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px; color: var(--text-slate); transition: 0.2s; }
     .tab.active { background: #ffffff; color: var(--primary-blue); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    body.high-contrast .tab.active { background: #374151; color: #38bdf8; }
+    body.high-contrast .tab.active { background: #374151; color: #22c55e; }
 
     .empty-state { padding: 40px 20px; text-align: center; color: var(--text-muted); }
 
@@ -199,12 +208,12 @@
     <div class="gov-brand">
       <div class="emblem-icon">🏛️</div>
       <div>
-        <div class="gov-title-main" data-i18n="portalTitle">Harvest Heist (DoCA & FCI Smart Procurement Network)</div>
+        <div class="gov-title-main" data-i18n="portalTitle">AgriGrow (DoCA & FCI Smart Procurement Network)</div>
         <div class="gov-subtitle" data-i18n="portalSub">Department of Consumer Affairs & Food Corporation of India</div>
       </div>
     </div>
     <div class="header-controls">
-      <button class="contrast-btn" id="themeToggleBtn" onclick="toggleContrast()">🌙 Dark Mode</button>
+      <button class="contrast-btn" id="themeToggleBtn" onclick="toggleContrast()" style="font-size: 16px; padding: 6px 12px; margin-right: 10px;" title="Toggle Dark/Light Mode">🌙</button>
       <select class="lang-select" id="langPicker" onchange="changeLanguage(this.value)">
         <option value="en-IN">🇬🇧 English</option>
         <option value="hi-IN">🇮🇳 हिंदी (Hindi)</option>
@@ -269,15 +278,15 @@
           <div class="grid-title" data-i18n="cardScheme">Scheme Participation</div>
           <div class="grid-status" id="status-scheme"></div>
         </div>
-        <div class="grid-card dark:bg-slate-900 dark:border-slate-800" onclick="navigate('view-status')">
+        <div class="grid-card" onclick="navigate('view-status')">
           <div class="grid-icon" style="margin-bottom:8px;">📊</div>
           <div class="grid-title" data-i18n="cardStatus">Application & Booking Status</div>
           <div class="grid-status status-done" style="margin-top:4px; font-size: 11px;">View Application States</div>
         </div>
-        <div class="grid-card border-2 border-sky-500 dark:bg-slate-900 dark:border-sky-500" onclick="navigate('view-slot-booking')">
+        <div class="grid-card" onclick="navigate('view-slot-booking')">
           <div class="grid-icon" style="margin-bottom:8px;">📅</div>
           <div class="grid-title" data-i18n="cardSlotBooking">Smart Slot Booking</div>
-          <div class="grid-status text-sky-600 dark:text-sky-400 font-bold" style="margin-top:4px; font-size: 11px;">Book Now</div>
+          <div class="grid-status text-green-600 dark:text-green-400 font-bold" style="margin-top:4px; font-size: 11px;">Book Now</div>
         </div>
       </div>
     </div>
@@ -287,26 +296,26 @@
   <div id="view-slot-booking" class="view-section">
     <div class="container">
       <button class="btn btn-outline dark:text-slate-200 dark:border-slate-700" style="margin:20px 0 10px; width:auto; padding:8px 16px;" onclick="navigate('view-dashboard')">← Back to Dashboard</button>
-      <div class="card dark:bg-slate-900 dark:border-slate-800">
-        <div class="card-title text-sky-700 dark:text-sky-400">📅 Smart Slot Booking</div>
+      <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl mb-6 shadow-sm">
+        <div class="card-title text-green-700 dark:text-green-400">📅 Smart Slot Booking</div>
         
         <!-- Pre-requisite Checklist UI -->
         <div class="bg-gray-50 dark:bg-slate-800 p-4 rounded-lg mb-6 border border-gray-200 dark:border-slate-700">
           <h4 class="font-bold mb-2 text-sm text-gray-700 dark:text-slate-300">Pre-requisite Checklist</h4>
           <ul class="text-sm space-y-2">
-            <li class="flex items-center text-sky-600 dark:text-sky-400">
+            <li class="flex items-center text-green-600 dark:text-green-400">
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
               Aadhaar Verified (xxxx-xxxx-1234)
             </li>
-            <li class="flex items-center text-sky-600 dark:text-sky-400">
+            <li class="flex items-center text-green-600 dark:text-green-400">
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
               Samagra ID Linked
             </li>
-            <li class="flex items-center text-sky-600 dark:text-sky-400">
+            <li class="flex items-center text-green-600 dark:text-green-400">
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
               Land Records (0.8 Hectare mapped)
             </li>
-            <li class="flex items-center text-sky-600 dark:text-sky-400">
+            <li class="flex items-center text-green-600 dark:text-green-400">
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
               Active Bank Account (SBI)
             </li>
@@ -328,21 +337,20 @@
             <label class="form-label dark:text-slate-300">Live Capacity Tracker (Tomorrow)</label>
             <div class="flex justify-between text-sm mb-1">
               <span class="text-gray-600 dark:text-slate-400" id="slot-time">10:00 AM - 12:00 PM</span>
-              <span class="font-bold text-sky-600 dark:text-sky-400" id="slot-count">45/100 slots booked</span>
+              <span class="font-bold text-green-600 dark:text-green-400" id="slot-count">45/100 slots booked</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-slate-700">
-              <div class="bg-sky-600 h-2.5 rounded-full" style="width: 45%"></div>
+              <div class="bg-green-600 h-2.5 rounded-full" style="width: 45%"></div>
             </div>
           </div>
           
           <button class="btn btn-primary mt-6 w-full hidden" id="confirm-booking-btn" onclick="generateReceipt()">Confirm & Book Slot</button>
         </div>
 
-        <div id="booking-receipt-area" class="hidden text-center p-4 bg-sky-50 border border-sky-200 rounded-lg dark:bg-slate-800 dark:border-slate-700 mt-4">
-          <h3 class="text-lg font-bold text-sky-800 dark:text-sky-400 mb-2">Booking Confirmed!</h3>
+        <div id="booking-receipt-area" class="hidden text-center p-4 bg-green-50 border border-green-200 rounded-lg dark:bg-slate-800 dark:border-slate-700 mt-4">
+          <h3 class="text-lg font-bold text-green-800 dark:text-green-400 mb-2">Booking Confirmed!</h3>
           <p class="text-sm text-gray-700 dark:text-slate-300 mb-4">Registration No: <span class="font-mono font-bold">MH-PUN-8842</span></p>
           <div class="inline-block bg-white p-2 rounded mb-3 border border-gray-200">
-            <!-- Dummy QR Code placeholder using a basic unicode pattern or SVG -->
             <svg class="w-32 h-32 text-gray-800" fill="currentColor" viewBox="0 0 24 24"><path d="M4 4h6v6H4zm2 2v2h2V6zM4 14h6v6H4zm2 2v2h2v-2zM14 4h6v6h-6zm2 2v2h2V6zM14 14h2v2h-2zm4 0h2v2h-2zm-2 2h2v2h-2zm4 0h2v2h-2zm-2 2h2v2h-2zM12 4h2v2h-2zm0 4h2v2h-2zm0 4h2v2h-2zm0 4h2v2h-2zm2-2h2v2h-2zm4 2h2v2h-2zm-6 2h2v2h-2z"/></svg>
           </div>
           <p class="text-xs text-gray-500 dark:text-slate-400">Please carry this digital receipt and your Aadhaar to the Mandi.</p>
@@ -361,11 +369,10 @@
       if (select.value) {
         capacityContainer.classList.remove('hidden');
         btn.classList.remove('hidden');
-        // Mocking dynamic capacity based on selection
         const counts = {'pune': '45/100', 'nashik': '82/100', 'nagpur': '12/100'};
         const widths = {'pune': '45%', 'nashik': '82%', 'nagpur': '12%'};
         document.getElementById('slot-count').innerText = counts[select.value] + ' slots booked';
-        capacityContainer.querySelector('.bg-sky-600').style.width = widths[select.value];
+        capacityContainer.querySelector('.bg-green-600').style.width = widths[select.value];
       } else {
         capacityContainer.classList.add('hidden');
         btn.classList.add('hidden');
@@ -448,7 +455,7 @@
     <div class="container">
       <button class="btn btn-outline dark:text-slate-200 dark:border-slate-700" style="margin:20px 0 10px; width:auto; padding:8px 16px;" onclick="navigate('view-dashboard')">← Back to Dashboard</button>
       <div class="card dark:bg-slate-900 dark:border-slate-800">
-        <div class="card-title text-sky-700 dark:text-sky-400">🌾 Scheme Participation (Crop Details)</div>
+        <div class="card-title text-green-700 dark:text-green-400">🌾 Scheme Participation (Crop Details)</div>
         
         <div class="form-group">
           <label class="form-label dark:text-slate-300">Scheme Name</label>
@@ -482,9 +489,9 @@
           <p class="text-xs text-gray-500 mt-1 dark:text-slate-400">Land area auto-fetched from State Land Records (Bhoomi/Bhulekh).</p>
         </div>
 
-        <div class="form-group bg-sky-50 dark:bg-slate-800 p-3 rounded border border-sky-200 dark:border-slate-700 mt-2">
-          <label class="form-label text-sky-800 dark:text-sky-400 font-bold">Maximum Eligible Quantity</label>
-          <div class="text-xl font-mono text-sky-700 dark:text-sky-300" id="maxQtyDisplay">75.00 Qtl</div>
+        <div class="form-group bg-green-50 dark:bg-slate-800 p-3 rounded border border-green-200 dark:border-slate-700 mt-2">
+          <label class="form-label text-green-800 dark:text-green-400 font-bold">Maximum Eligible Quantity</label>
+          <div class="text-xl font-mono text-green-700 dark:text-green-300" id="maxQtyDisplay">75.00 Qtl</div>
           <p class="text-xs text-gray-600 dark:text-slate-400 mt-1">Calculated based on standard yield (30 Qtl/Hectare) × Mapped Area.</p>
         </div>
 
@@ -495,17 +502,12 @@
 
   <script>
     function calculateMaxQty() {
-      // Mock calculation: 30 Quintals per Hectare
       const area = parseFloat(document.getElementById('schemeArea').value) || 0;
       const maxQty = area * 30;
       document.getElementById('maxQtyDisplay').innerText = maxQty.toFixed(2) + ' Qtl';
     }
-    // Init calculation on load
     document.addEventListener('DOMContentLoaded', calculateMaxQty);
   </script>
-      </div>
-    </div>
-  </div>
 
   <!-- VIEW: Application Status (Expanded Features) -->
   <div id="view-status" class="view-section">
@@ -520,7 +522,6 @@
         </div>
         
         <div id="status-applied" class="status-content">
-          <!-- Expanded Slot Booking Engine -->
           <div id="slot-booking-widget" style="display:none; margin-top:20px; border-top:1px solid var(--border-light); padding-top:20px;">
             <div style="font-weight:700; margin-bottom:12px;">✅ Profile Complete: Book Procurement Slot</div>
             <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">Select crop and vehicle details to allocate your Mandi time-slot.</p>
@@ -534,7 +535,7 @@
                 <option value="soyabean" data-msp="4600">Soyabean</option>
                 <option value="tur" data-msp="7000">Tur (Arhar)</option>
               </select>
-              <div id="mspDisplay" style="margin-top:6px; font-size:12px; font-weight:700; color:var(--primary-blue);">Live MSP: ₹2,275/Qtl</div>
+              <div id="mspDisplay" style="margin-top:6px; font-size:12px; font-weight:700; color:var(--primary-green);">Live MSP: ₹2,275/Qtl</div>
             </div>
             <div class="form-group">
               <label class="form-label">Transport Mode</label>
@@ -564,12 +565,10 @@
             No active applications found. Complete Registration -> Scheme Participation first.
           </div>
           
-          <!-- Geofenced Digital Token & DBT Tracker -->
           <div id="digital-token-widget" style="display:none; margin-top:20px;">
-            <div style="background:var(--surface-light); border:2px dashed var(--primary-blue); border-radius:12px; padding:16px; text-align:center;">
-              <h4 style="margin-bottom:8px; color:var(--primary-blue);">Digital Token: TK-8492</h4>
+            <div style="background:var(--surface-light); border:2px dashed var(--primary-green); border-radius:12px; padding:16px; text-align:center;">
+              <h4 style="margin-bottom:8px; color:var(--primary-green);">Digital Token: TK-8492</h4>
               <div style="width:100px; height:100px; margin:0 auto 12px; background:#fff; display:flex; align-items:center; justify-content:center; border:1px solid #ccc;">
-                <!-- Simulated QR code -->
                 <img src="/assets/hero-banner.jpg" alt="QR" width="90" style="object-fit: cover; opacity: 0.5;">
               </div>
               <div id="geofenceStatus" class="status-pending" style="display:inline-block; font-size:12px; margin-bottom:12px;">Token Inactive – Activate within 500m</div>
@@ -581,7 +580,7 @@
               <h4 style="font-size:14px; margin-bottom:12px;">Direct Benefit Transfer (DBT) Tracker</h4>
               <ul style="list-style:none; font-size:13px; color:var(--text-slate); padding-left:10px; border-left:2px solid #e2e8f0;">
                 <li style="margin-bottom:12px; position:relative;">
-                  <span style="position:absolute; left:-15px; top:0; background:var(--primary-blue); width:10px; height:10px; border-radius:50%;"></span>
+                  <span style="position:absolute; left:-15px; top:0; background:var(--primary-green); width:10px; height:10px; border-radius:50%;"></span>
                   <strong>Slot Booked</strong>
                 </li>
                 <li id="dbt-geofence" style="margin-bottom:12px; position:relative; color:var(--text-muted);">
@@ -619,7 +618,6 @@
   </div>
 
   <!-- Modals -->
-  <!-- Login / OTP Modal -->
   <div class="modal-overlay" id="loginModal">
     <div class="modal-box">
       <h3 style="font-family:'Outfit'; font-size:20px; margin-bottom:6px;" id="loginModalTitle">Farmer Login</h3>
@@ -652,7 +650,6 @@
     </div>
   </div>
   
-  <!-- Grievance Modal -->
   <div class="modal-overlay" id="grievanceModal">
     <div class="modal-box">
       <h3 style="font-family:'Outfit'; font-size:20px; margin-bottom:6px;">Raise Grievance</h3>
@@ -676,10 +673,9 @@
 
   <script src="/assets/voice-assistant.js"></script>
   <script>
-    // Dictionary Localization
     const dict = {
       'en-IN': {
-        portalTitle: "Harvest Heist (DoCA & FCI Smart Procurement Network)", portalSub: "Department of Consumer Affairs & Food Corporation of India",
+        portalTitle: "AgriGrow (DoCA & FCI Smart Procurement Network)", portalSub: "Department of Consumer Affairs & Food Corporation of India",
         heroTitle: "Empowering Farmers", heroSub: "International Year of Cooperatives",
         btnFarmerLogin: "Farmer Registration / Login", btnOfficerLogin: "Mandi Officer Login",
         welcomeBack: "Welcome back,", cardKYC: "KYC & Aadhaar", cardBank: "Bank Details",
@@ -687,7 +683,7 @@
         statusPending: "Pending", statusDone: "Completed"
       },
       'hi-IN': {
-        portalTitle: "हार्वेस्ट हाइस्ट (DoCA और FCI स्मार्ट खरीद नेटवर्क)", portalSub: "उपभोक्ता मामले विभाग और भारतीय खाद्य निगम",
+        portalTitle: "एग्रीग्रो (DoCA और FCI स्मार्ट खरीद नेटवर्क)", portalSub: "उपभोक्ता मामले विभाग और भारतीय खाद्य निगम",
         heroTitle: "किसानों का सशक्तिकरण", heroSub: "अंतर्राष्ट्रीय सहकारिता वर्ष",
         btnFarmerLogin: "किसान पंजीकरण / लॉगिन", btnOfficerLogin: "मंडी अधिकारी लॉगिन",
         welcomeBack: "वापसी पर स्वागत है,", cardKYC: "केवाईसी और आधार", cardBank: "बैंक विवरण",
@@ -695,7 +691,7 @@
         statusPending: "लंबित", statusDone: "पूरा हुआ"
       },
       'mr-IN': {
-        portalTitle: "हार्वेस्ट हाइस्ट (DoCA आणि FCI स्मार्ट खरेदी नेटवर्क)", portalSub: "ग्राहक व्यवहार विभाग आणि भारतीय अन्न महामंडळ",
+        portalTitle: "एग्रीग्रो (DoCA आणि FCI स्मार्ट खरेदी नेटवर्क)", portalSub: "ग्राहक व्यवहार विभाग आणि भारतीय अन्न महामंडळ",
         heroTitle: "शेतकऱ्यांचे सक्षमीकरण", heroSub: "आंतरराष्ट्रीय सहकार वर्ष",
         btnFarmerLogin: "शेतकरी नोंदणी / लॉगिन", btnOfficerLogin: "मंडी अधिकारी लॉगिन",
         welcomeBack: "पुन्हा स्वागत आहे,", cardKYC: "केवायसी आणि आधार", cardBank: "बँक तपशील",
@@ -703,7 +699,7 @@
         statusPending: "प्रलंबित", statusDone: "पूर्ण झाले"
       },
       'pa-IN': {
-        portalTitle: "ਹਾਰਵੈਸਟ ਹਾਈਸਟ (DoCA ਅਤੇ FCI ਸਮਾਰਟ ਖਰੀਦ ਨੈੱਟਵਰਕ)", portalSub: "ਖਪਤਕਾਰ ਮਾਮਲੇ ਵਿਭਾਗ ਅਤੇ ਭਾਰਤੀ ਖੁਰਾਕ ਨਿਗਮ",
+        portalTitle: "ਐਗਰੀਗ੍ਰੋ (DoCA ਅਤੇ FCI ਸਮਾਰਟ ਖਰੀਦ ਨੈੱਟਵਰਕ)", portalSub: "ਖਪਤਕਾਰ ਮਾਮਲੇ ਵਿਭਾਗ ਅਤੇ ਭਾਰਤੀ ਖੁਰਾਕ ਨਿਗਮ",
         heroTitle: "ਕਿਸਾਨਾਂ ਦਾ ਸਸ਼ਕਤੀਕਰਨ", heroSub: "ਅੰਤਰਰਾਸ਼ਟਰੀ ਸਹਿਕਾਰਤਾ ਸਾਲ",
         btnFarmerLogin: "ਕਿਸਾਨ ਰਜਿਸਟ੍ਰੇਸ਼ਨ / ਲਾਗਇਨ", btnOfficerLogin: "ਮੰਡੀ ਅਧਿਕਾਰੀ ਲਾਗਇਨ",
         welcomeBack: "ਵਾਪਸੀ 'ਤੇ ਸਵਾਗਤ ਹੈ,", cardKYC: "KYC ਅਤੇ ਆਧਾਰ", cardBank: "ਬੈਂਕ ਵੇਰਵੇ",
@@ -711,7 +707,7 @@
         statusPending: "ਲੰਬਿਤ", statusDone: "ਪੂਰਾ ਹੋਇਆ"
       },
       'ta-IN': {
-        portalTitle: "ஹார்வெஸ்ட் ஹெய்ஸ்ட் (DoCA மற்றும் FCI ஸ்மார்ட் கொள்முதல் நெட்வொர்க்)", portalSub: "நுகர்வோர் விவகாரங்கள் துறை மற்றும் இந்திய உணவு கழகம்",
+        portalTitle: "எக்ரிகிரோ (DoCA மற்றும் FCI ஸ்மார்ட் கொள்முதல் நெட்வொர்க்)", portalSub: "நுகர்வோர் விவகாரங்கள் துறை மற்றும் இந்திய உணவு கழகம்",
         heroTitle: "விவசாயிகளுக்கு அதிகாரமளித்தல்", heroSub: "சர்வதேச கூட்டுறவு ஆண்டு",
         btnFarmerLogin: "விவசாயி பதிவு / உள்நுழைவு", btnOfficerLogin: "மண்டி அதிகாரி உள்நுழைவு",
         welcomeBack: "மீண்டும் வருக,", cardKYC: "KYC மற்றும் ஆதார்", cardBank: "வங்கி விவரங்கள்",
@@ -719,7 +715,7 @@
         statusPending: "நிலுவையில் உள்ளது", statusDone: "முடிந்தது"
       },
       'te-IN': {
-        portalTitle: "హార్వెస్ట్ హీస్ట్ (DoCA మరియు FCI స్మార్ట్ ప్రొక్యూర్‌మెంట్ నెట్‌వర్క్)", portalSub: "వినియోగదారుల వ్యవహారాల శాఖ మరియు ఫుడ్ కార్పొరేషన్ ఆఫ్ ఇండియా",
+        portalTitle: "అగ్రిగ్రో (DoCA మరియు FCI స్మార్ట్ ప్రొక్యూర్‌మెంట్ నెట్‌వర్క్)", portalSub: "వినియోగదారుల వ్యవహారాల శాఖ మరియు ఫుడ్ కార్పొరేషన్ ఆఫ్ ఇండియా",
         heroTitle: "రైతులకు సాధికారత", heroSub: "అంతర్జాతీయ సహకార సంవత్సరం",
         btnFarmerLogin: "రైతు నమోదు / లాగిన్", btnOfficerLogin: "మండి అధికారి లాగిన్",
         welcomeBack: "తిరిగి స్వాగతం,", cardKYC: "KYC మరియు ఆధార్", cardBank: "బ్యాంక్ వివరాలు",
@@ -727,7 +723,7 @@
         statusPending: "పెండింగ్‌లో ఉంది", statusDone: "పూర్తయింది"
       },
       'bn-IN': {
-        portalTitle: "হারভেস্ট হেইস্ট (DoCA এবং FCI স্মার্ট প্রকিউরমেন্ট নেটওয়ার্ক)", portalSub: "ভোক্তা বিষয়ক বিভাগ এবং ভারতীয় খাদ্য কর্পোরেশন",
+        portalTitle: "এগ্রিগ্রো (DoCA এবং FCI স্মার্ট প্রকিউরমেন্ট নেটওয়ার্ক)", portalSub: "ভোক্তা বিষয়ক বিভাগ এবং ভারতীয় খাদ্য কর্পোরেশন",
         heroTitle: "কৃষকদের ক্ষমতায়ন", heroSub: "আন্তর্জাতিক সমবায় বর্ষ",
         btnFarmerLogin: "কৃষক নিবন্ধন / লগইন", btnOfficerLogin: "মন্ডি অফিসার লগইন",
         welcomeBack: "আবার স্বাগতম,", cardKYC: "KYC এবং আধার", cardBank: "ব্যাংকের বিবরণ",
@@ -735,7 +731,7 @@
         statusPending: "মুলতুবি", statusDone: "সম্পন্ন"
       },
       'gu-IN': {
-        portalTitle: "હાર્વેસ્ટ હીસ્ટ (DoCA અને FCI સ્માર્ટ પ્રોક્યોરમેન્ટ નેટવર્ક)", portalSub: "ગ્રાહક બાબતોનો વિભાગ અને ફૂડ કોર્પોરેશન ઓફ ઇન્ડિયા",
+        portalTitle: "એગ્રીગ્રો (DoCA અને FCI સ્માર્ટ પ્રોક્યોરમેન્ટ નેટવર્ક)", portalSub: "ગ્રાહક બાબતોનો વિભાગ અને ફૂડ કોર્પોરેશન ઓફ ઇન્ડિયા",
         heroTitle: "ખેડૂતોનું સશક્તિકરણ", heroSub: "આંતરરાષ્ટ્રીય સહકારી વર્ષ",
         btnFarmerLogin: "ખેડૂત નોંધણી / લોગિન", btnOfficerLogin: "મંડી ઓફિસર લોગિન",
         welcomeBack: "પાછા સ્વાગત છે,", cardKYC: "KYC અને આધાર", cardBank: "બેંક વિગતો",
@@ -743,7 +739,7 @@
         statusPending: "બાકી", statusDone: "પૂર્ણ"
       },
       'kn-IN': {
-        portalTitle: "ಹಾರ್ವೆಸ್ಟ್ ಹೈಸ್ಟ್ (DoCA ಮತ್ತು FCI ಸ್ಮಾರ್ಟ್ ಪ್ರೊಕ್ಯೂರ್‌ಮೆಂಟ್ ನೆಟ್‌ವರ್ಕ್)", portalSub: "ಗ್ರಾಹಕ ವ್ಯವಹಾರಗಳ ಇಲಾಖೆ ಮತ್ತು ಭಾರತೀಯ ಆಹಾರ ನಿಗಮ",
+        portalTitle: "ಅಗ್ರಿಗ್ರೊ (DoCA ಮತ್ತು FCI ಸ್ಮಾರ್ಟ್ ಪ್ರೊಕ್ಯೂರ್‌ಮೆಂಟ್ ನೆಟ್‌ವರ್ಕ್)", portalSub: "ಗ್ರಾಹಕ ವ್ಯವಹಾರಗಳ ಇಲಾಖೆ ಮತ್ತು ಭಾರತೀಯ ಆಹಾರ ನಿಗಮ",
         heroTitle: "ರೈತರ ಸಬಲೀಕರಣ", heroSub: "ಅಂತರರಾಷ್ಟ್ರೀಯ ಸಹಕಾರಿ ವರ್ಷ",
         btnFarmerLogin: "ರೈತ ನೋಂದಣಿ / ಲಾಗಿನ್", btnOfficerLogin: "ಮಂಡಿ ಅಧಿಕಾರಿ ಲಾಗಿನ್",
         welcomeBack: "ಮತ್ತೆ ಸ್ವಾಗತ,", cardKYC: "KYC ಮತ್ತು ಆಧಾರ್", cardBank: "ಬ್ಯಾಂಕ್ ವಿವರಗಳು",
@@ -755,7 +751,6 @@
     let currentLang = localStorage.getItem('doca_lang') || 'en-IN';
     document.getElementById('langPicker').value = currentLang;
 
-    // Accessibility Controls
     function setFontSize(size) {
       document.documentElement.setAttribute('data-font-size', size);
       localStorage.setItem('doca_font_size', size);
@@ -765,7 +760,7 @@
       document.body.classList.toggle('high-contrast');
       const isHc = document.documentElement.classList.contains('dark');
       localStorage.setItem('doca_contrast', isHc ? 'active' : 'normal');
-      document.getElementById('themeToggleBtn').innerText = isHc ? '☀️ Light Mode' : '🌙 Dark Mode';
+      document.getElementById('themeToggleBtn').innerText = isHc ? '☀️' : '🌙';
     }
     (function initAccessibility() {
       setFontSize(localStorage.getItem('doca_font_size') || 'normal');
@@ -774,7 +769,7 @@
         document.documentElement.classList.add('dark');
         document.body.classList.add('high-contrast');
       }
-      document.getElementById('themeToggleBtn').innerText = isHc ? '☀️ Light Mode' : '🌙 Dark Mode';
+      document.getElementById('themeToggleBtn').innerText = isHc ? '☀️' : '🌙';
       applyLang(currentLang);
     })();
 
@@ -793,9 +788,13 @@
         const key = el.getAttribute('data-i18n');
         if (dict[lang] && dict[lang][key]) el.innerText = dict[lang][key];
       });
+      document.querySelectorAll('.modal-content input, .modal-content select').forEach(el => {
+        el.style.backgroundColor = document.documentElement.classList.contains('dark') ? 'var(--surface-light)' : '#f8fafc';
+        el.style.color = 'var(--text-dark)';
+        el.style.border = `1px solid var(--border-light)`;
+      });
     }
 
-    // SPA Navigation
     function navigate(viewId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
       document.getElementById(viewId).classList.add('active');
@@ -821,7 +820,10 @@
       document.getElementById('captchaText').innerText = cap;
     }
 
+    let currentLoginType = 'farmer';
+
     function openLoginModal(type) {
+      currentLoginType = type;
       document.getElementById('loginModalTitle').innerText = type === 'farmer' ? "Farmer Login" : "Mandi Officer Login";
       document.getElementById('loginStep1').style.display = 'block';
       document.getElementById('loginStep2').style.display = 'none';
@@ -841,6 +843,11 @@
     }
 
     function verifyOTP() {
+      if (currentLoginType === 'officer') {
+        window.location.href = '/admin';
+        return;
+      }
+      
       state.isLoggedIn = true;
       state.mobile = document.getElementById('loginMobile').value;
       saveState();

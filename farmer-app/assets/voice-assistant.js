@@ -105,41 +105,37 @@ class VoiceEngine {
     }, 3000);
   }
 
-  processCommand(transcript) {
-    const lower = transcript.toLowerCase();
+  async processCommand(transcript) {
+    this.showToast("Thinking...");
     
-    // Command: Book Slot (9 languages)
-    const bookSlotKeywords = ['book slot', 'स्लॉट बुक', 'स्लॉट बुक करा', 'ਸਲਾਟ ਬੁੱਕ ਕਰੋ', 'ஸ்லாட் பதிவு செய்', 'స్లాట్ బుక్ చేయండి', 'স্লট বুক করুন', 'સ્લોટ બુક કરો', 'స్లాట్ కాయ్దిరిసి'];
-    if (bookSlotKeywords.some(kw => lower.includes(kw))) {
-      this.speak("Opening slot booking form.");
-      if (typeof window.triggerSlotBooking === 'function') window.triggerSlotBooking();
-      return;
+    try {
+      const response = await fetch('/api/v1/voice/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: transcript,
+          language: this.lang
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data && data.voice_response_text) {
+        this.speak(data.voice_response_text);
+        
+        // Trigger specific UI events if needed based on intent
+        if (data.detected_intent === 'BOOK_SLOT' && typeof window.triggerSlotBooking === 'function') {
+           setTimeout(() => window.triggerSlotBooking(), 2000);
+        } else if (data.detected_intent === 'CHECK_STATUS' && typeof window.triggerQueueStatus === 'function') {
+           setTimeout(() => window.triggerQueueStatus(), 2000);
+        }
+      } else {
+        this.speak("I couldn't process your request. Please try again.");
+      }
+    } catch (err) {
+      console.error("AI Voice API Error:", err);
+      this.speak("Network error. Could not reach the AI.");
     }
-
-    // Command: Check queue status (9 languages)
-    const statusKeywords = ['status', 'queue', 'स्थिति', 'स्थिती', 'ਸਥਿਤੀ', 'நிலை', 'స్థితి', 'অবস্থা', 'સ્થિતિ', 'ಸ್ಥಿತಿ'];
-    if (statusKeywords.some(kw => lower.includes(kw))) {
-      this.speak("You are currently number 5 in the queue. Estimated wait time is 12 minutes.");
-      if (typeof window.triggerQueueStatus === 'function') window.triggerQueueStatus();
-      return;
-    }
-
-    // Command: Read Notifications (9 languages)
-    const notifyKeywords = ['read notification', 'सूचनाएं पढ़ें', 'सूचना वाचा', 'ਸੂਚਨਾਵਾਂ ਪੜ੍ਹੋ', 'அறிவிப்புகளைப் படி', 'నోటిఫికేషన్లు చదవండి', 'বিজ্ঞপ্তি পড়ুন', 'સૂચનાઓ વાંચો', 'ಅಧಿಸೂಚನೆಗಳನ್ನು ಓದಿ'];
-    if (notifyKeywords.some(kw => lower.includes(kw))) {
-      this.speak("You have one new notification. Your slot for Chana procurement at Pune Mandi is approved for 10:00 AM.");
-      return;
-    }
-
-    // Command: Payment status
-    const payKeywords = ['payment', 'पैसे', 'पैसे', 'ਭੁਗਤਾਨ', 'பணம்', 'చెల్లింపు', 'পেমেন্ট', 'ચુકવણી', 'ಪಾವತಿ'];
-    if (payKeywords.some(kw => lower.includes(kw))) {
-      this.speak("Your payment is at the PFMS Bank Credit Sent stage. It will reflect in your account shortly.");
-      if (typeof window.triggerPaymentStatus === 'function') window.triggerPaymentStatus();
-      return;
-    }
-
-    this.speak("Sorry, I didn't understand that command.");
   }
 
   toggleAnnouncer() {
