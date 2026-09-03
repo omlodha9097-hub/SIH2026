@@ -923,28 +923,6 @@
     import('../src/lib/supabaseClient.js').then(async module => {
       supabase = module.supabase;
       
-      // Session Guard
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (!session) {
-        alert("You must be logged in as an Admin.");
-        window.location.href = '/farmer-app';
-        return;
-      }
-
-      // Role Guard
-      const { data: userData, error: roleError } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-      
-      if (roleError || !userData || userData.role !== 'admin') {
-        alert("Unauthorized. Admin access required.");
-        window.location.href = '/farmer-app';
-        return;
-      }
-
       // Init Engine
       refreshQueue();
     }).catch(err => {
