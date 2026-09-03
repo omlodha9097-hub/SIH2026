@@ -997,7 +997,7 @@
             access_type: 'offline',
             prompt: 'consent',
           },
-          redirectTo: window.location.origin + (role === 'admin' ? '/admin-dashboard' : '/farmer-app')
+          redirectTo: window.location.origin + (role === 'admin' ? '/admin-dashboard/' : '/farmer-app/')
         }
       });
       if (error) alert("Google Login Failed: " + error.message);
@@ -1048,7 +1048,7 @@
         email: email,
         password: password,
         options: {
-          emailRedirectTo: window.location.origin + (role === 'admin' ? '/admin-dashboard' : '/farmer-app'),
+          emailRedirectTo: window.location.origin + (role === 'admin' ? '/admin-dashboard/' : '/farmer-app/'),
           data: {
             role: role
           }
