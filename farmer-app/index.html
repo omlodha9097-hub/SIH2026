@@ -509,45 +509,6 @@
     
     // Make supabase globally accessible
     window.supabase = supabase;
-    window.currentUserId = null;
-
-    // Handle Auth State Changes
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth event:", event);
-      if (session) {
-        window.currentUserId = session.user.id;
-        state.isLoggedIn = true;
-        saveState();
-
-        // Fetch user role
-        const { data: userData } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-
-        const userRole = userData?.role || session.user.user_metadata?.role;
-
-        if (userRole === 'admin') {
-          // Redirect Admin
-          window.location.href = '/admin-dashboard';
-        } else {
-          // Farmer is logged in
-          if (document.getElementById('loginModal').classList.contains('active')) {
-            closeModal('loginModal');
-            navigate('view-dashboard');
-          }
-          loadFarmerCrops();
-        }
-      } else {
-        window.currentUserId = null;
-        state.isLoggedIn = false;
-        saveState();
-        if (window.location.pathname !== '/farmer-app' && window.location.pathname !== '/farmer-app/') {
-             // Let landing page stay
-        }
-      }
-    });
 
     function calculateMaxQty() {
       const area = parseFloat(document.getElementById('schemeArea').value) || 0;
@@ -601,6 +562,13 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       calculateMaxQty();
+      
+      // Restore session from localStorage for mock mobile login
+      const mockState = JSON.parse(localStorage.getItem('doca_state'));
+      if (mockState && mockState.isLoggedIn && mockState.mobile) {
+        window.currentUserId = "farmer-" + mockState.mobile;
+        loadFarmerCrops();
+      }
     });
 
     // We make loadFarmerCrops global so it can be called elsewhere
@@ -787,31 +755,31 @@
   <div class="modal-overlay" id="loginModal">
     <div class="modal-box">
       <h3 style="font-family:'Outfit'; font-size:20px; margin-bottom:6px;" id="loginModalTitle">Farmer Login</h3>
-      <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">Sign in or create an account.</p>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">Enter your mobile number to receive an OTP.</p>
       
       <div id="loginStep1">
-        <button class="btn btn-outline" style="width: 100%; margin-bottom: 16px; border-color: #ddd; color: #333; font-weight: 500;" onclick="loginWithGoogle()">
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px; vertical-align:middle; margin-right:8px;" alt="Google">
-          Sign in with Google
-        </button>
-        
-        <div style="text-align:center; font-size:12px; color:#999; margin-bottom:16px;">OR EMAIL & PASSWORD</div>
+        <div class="form-group">
+          <label class="form-label">Mobile Number</label>
+          <input type="tel" id="loginMobile" class="form-control" placeholder="10-digit number" value="9823411029">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Security Captcha</label>
+          <div class="captcha-box">
+            <div class="captcha-visual" id="captchaText">TREDKr</div>
+            <button class="captcha-refresh" onclick="generateCaptcha()">🔄</button>
+          </div>
+          <input type="text" id="loginCaptcha" class="form-control" placeholder="Enter characters above" style="margin-top:8px;">
+        </div>
+        <button class="btn btn-primary" onclick="requestOTP()">Get OTP</button>
+        <button class="btn btn-outline" style="margin-top:12px;" onclick="closeModal('loginModal')">Cancel</button>
+      </div>
 
+      <div id="loginStep2" style="display:none;">
         <div class="form-group">
-          <label class="form-label">Email Address</label>
-          <input type="email" id="loginEmail" class="form-control" placeholder="farmer@example.com" value="">
+          <label class="form-label">Enter 4-Digit OTP</label>
+          <input type="text" id="loginOTP" class="form-control" placeholder="0000" maxlength="4" style="text-align:center; font-size:24px; letter-spacing:8px;">
         </div>
-        
-        <div class="form-group">
-          <label class="form-label">Password</label>
-          <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" value="">
-        </div>
-        
-        <div style="display: flex; gap: 10px; margin-top: 16px;">
-          <button class="btn btn-primary" style="flex:1;" onclick="handleLogin()" id="btnLogin">Log In</button>
-          <button class="btn btn-outline" style="flex:1;" onclick="handleSignup()" id="btnSignup">Sign Up</button>
-        </div>
-        <button class="btn btn-outline" style="margin-top:12px; width:100%; border:none; background:transparent;" onclick="closeModal('loginModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="verifyOTP()">Verify & Login</button>
       </div>
     </div>
   </div>
@@ -979,99 +947,59 @@
       geofenced: false
     };
 
+    function generateCaptcha() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+      let cap = '';
+      for(let i=0; i<6; i++) cap += chars.charAt(Math.floor(Math.random() * chars.length));
+      document.getElementById('captchaText').innerText = cap;
+    }
+
     let currentLoginType = 'farmer';
 
     function openLoginModal(type) {
-      currentLoginType = type; // 'farmer' or 'officer'
+      currentLoginType = type;
       document.getElementById('loginModalTitle').innerText = type === 'farmer' ? "Farmer Login" : "Mandi Officer Login";
+      document.getElementById('loginStep1').style.display = 'block';
+      document.getElementById('loginStep2').style.display = 'none';
       document.getElementById('loginModal').classList.add('active');
+      generateCaptcha();
     }
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-    async function loginWithGoogle() {
-      if (!window.supabase) return;
-      const role = currentLoginType === 'officer' ? 'admin' : 'farmer';
+    function requestOTP() {
+      const cap = document.getElementById('loginCaptcha').value;
+      const expected = document.getElementById('captchaText').innerText;
+      if (cap !== expected) { alert("Invalid Captcha! Please try again."); generateCaptcha(); return; }
       
-      const { error } = await window.supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-          redirectTo: window.location.origin + (role === 'admin' ? '/admin-dashboard/' : '/farmer-app/')
-        }
-      });
-      if (error) alert("Google Login Failed: " + error.message);
+      document.getElementById('loginStep1').style.display = 'none';
+      document.getElementById('loginStep2').style.display = 'block';
+      document.getElementById('loginOTP').value = '1234'; // Simulate Auto-read OTP
     }
 
-    async function handleLogin() {
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-      
-      if (!email || !password) {
-        alert("Please enter both email and password.");
+    function verifyOTP() {
+      if (currentLoginType === 'officer') {
+        window.location.href = '/admin-dashboard';
         return;
       }
       
-      const btn = document.getElementById('btnLogin');
-      btn.innerText = "Logging in...";
-      btn.disabled = true;
-
-      const { data, error } = await window.supabase.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
-
-      btn.disabled = false;
-      btn.innerText = "Log In";
-
-      if (error) {
-        alert("Login failed: " + error.message);
-      }
+      state.isLoggedIn = true;
+      state.mobile = document.getElementById('loginMobile').value;
+      saveState();
+      
+      // Set the user ID so crops load
+      window.currentUserId = "farmer-" + state.mobile;
+      
+      closeModal('loginModal');
+      navigate('view-dashboard');
+      loadFarmerCrops();
     }
 
-    async function handleSignup() {
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-      
-      if (!email || !password) {
-        alert("Please enter both email and password.");
-        return;
-      }
-      
-      const btn = document.getElementById('btnSignup');
-      btn.innerText = "Signing up...";
-      btn.disabled = true;
-
-      const role = currentLoginType === 'officer' ? 'admin' : 'farmer';
-
-      const { data, error } = await window.supabase.auth.signUp({
-        email: email,
-        password: password,
-        options: {
-          emailRedirectTo: window.location.origin + (role === 'admin' ? '/admin-dashboard/' : '/farmer-app/'),
-          data: {
-            role: role
-          }
-        }
-      });
-
-      btn.disabled = false;
-      btn.innerText = "Sign Up";
-
-      if (error) {
-        alert("Signup failed: " + error.message);
-      } else {
-        alert("Signup successful! You can now log in (Check your email for confirmation if enabled in Supabase).");
-      }
-    }
-
-    async function logout() {
+    function logout() {
       if (window.supabase) {
-        await window.supabase.auth.signOut();
+        window.supabase.auth.signOut();
       }
       state.isLoggedIn = false;
+      state.mobile = '';
       window.currentUserId = null;
       saveState();
       navigate('view-landing');
