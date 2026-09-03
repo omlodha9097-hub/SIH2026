@@ -526,7 +526,9 @@
           .eq('id', session.user.id)
           .single();
 
-        if (userData && userData.role === 'admin') {
+        const userRole = userData?.role || session.user.user_metadata?.role;
+
+        if (userRole === 'admin') {
           // Redirect Admin
           window.location.href = '/admin-dashboard';
         } else {

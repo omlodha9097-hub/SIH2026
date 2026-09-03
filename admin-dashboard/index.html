@@ -933,14 +933,16 @@
       }
 
       // Role Guard
-      const { data: userData, error: roleError } = await supabase
+      const { data: userData } = await supabase
         .from('users')
         .select('role')
         .eq('id', session.user.id)
         .single();
       
-      if (roleError || !userData || userData.role !== 'admin') {
-        alert("Unauthorized. Admin access required.");
+      const userRole = userData?.role || session.user.user_metadata?.role;
+
+      if (userRole !== 'admin') {
+        alert("Unauthorized. Admin access required. Please log in using Mandi Officer Login.");
         window.location.href = '/farmer-app';
         return;
       }
