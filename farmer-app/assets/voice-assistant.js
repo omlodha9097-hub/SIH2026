@@ -108,34 +108,29 @@ class VoiceEngine {
   async processCommand(transcript) {
     this.showToast("Thinking...");
     
-    try {
-      const response = await fetch('/api/v1/voice/process', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: transcript,
-          language: this.lang
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (data && data.voice_response_text) {
-        this.speak(data.voice_response_text);
-        
-        // Trigger specific UI events if needed based on intent
-        if (data.detected_intent === 'BOOK_SLOT' && typeof window.triggerSlotBooking === 'function') {
-           setTimeout(() => window.triggerSlotBooking(), 2000);
-        } else if (data.detected_intent === 'CHECK_STATUS' && typeof window.triggerQueueStatus === 'function') {
-           setTimeout(() => window.triggerQueueStatus(), 2000);
-        }
-      } else {
-        this.speak("I couldn't process your request. Please try again.");
+    // Mock Backend Logic since backend is removed
+    setTimeout(() => {
+      let mockIntent = 'UNKNOWN';
+      let mockResponse = "This is a demo response. Connect your own NLP backend to process this.";
+
+      const lowerText = transcript.toLowerCase();
+      if (lowerText.includes("book") || lowerText.includes("slot")) {
+        mockIntent = 'BOOK_SLOT';
+        mockResponse = "Booking a slot for you now.";
+      } else if (lowerText.includes("status")) {
+        mockIntent = 'CHECK_STATUS';
+        mockResponse = "Checking your application status.";
       }
-    } catch (err) {
-      console.error("AI Voice API Error:", err);
-      this.speak("Network error. Could not reach the AI.");
-    }
+
+      this.speak(mockResponse);
+      
+      // Trigger specific UI events if needed based on intent
+      if (mockIntent === 'BOOK_SLOT' && typeof window.triggerSlotBooking === 'function') {
+         setTimeout(() => window.triggerSlotBooking(), 2000);
+      } else if (mockIntent === 'CHECK_STATUS' && typeof window.triggerQueueStatus === 'function') {
+         setTimeout(() => window.triggerQueueStatus(), 2000);
+      }
+    }, 1000);
   }
 
   toggleAnnouncer() {

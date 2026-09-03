@@ -832,34 +832,22 @@
       const moisture = parseFloat(document.getElementById('moistureInput').value);
       const foreign = parseFloat(document.getElementById('foreignInput').value);
 
-      const qualRes = await fetch('/api/v1/quality/submit', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          slot_id: activeSlotId,
-          gross_weight: gross,
-          tare_weight: tare,
-          moisture_pct: moisture,
-          foreign_matter_pct: foreign
-        })
-      });
-      const qualData = await qualRes.json();
-
-      const pfmsRes = await fetch('/api/v1/pfms/disburse', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ slot_id: activeSlotId })
-      });
-      const pfmsData = await pfmsRes.json();
-
-      if (pfmsData.success) {
-        alert(`🎉 Quality Approved & PFMS Disbursement Complete!\nPayout Amount: ₹${qualData.total_payout_inr.toLocaleString('en-IN')}\nPFMS Ref UTR: ${pfmsData.pfms_response.pfms_ref_no}`);
-        refreshQueue();
+      // Mock Backend Logic since backend is removed
+      const netWeight = gross - tare;
+      let payout = 0;
+      if (netWeight > 0) {
+        // Mock MSP calculations
+        payout = netWeight * 22.75;
       }
+      
+      setTimeout(() => {
+        alert(`🎉 Quality Approved & PFMS Disbursement Complete!\nPayout Amount: ₹${payout.toLocaleString('en-IN')}\nPFMS Ref UTR: PFMS-MOCK-${Math.floor(Math.random()*1000000)}`);
+        refreshQueue();
+      }, 500);
     }
 
     async function seedDemoData() {
-      await fetch('/api/v1/seed', {method: 'POST'});
+      // Mock seed
       alert("Database re-seeded successfully with Mandi and Farmer records!");
       refreshQueue();
       loadGrievances();
