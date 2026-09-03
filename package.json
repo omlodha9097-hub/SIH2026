@@ -1,0 +1,13 @@
+{
+  "name": "harvest-heist-procurement-platform",
+  "version": "1.0.0",
+  "description": "AgriGrow (Harvest Heist) Smart Procurement Network Prototype",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "build": "echo 'Static build ready for deployment'"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}

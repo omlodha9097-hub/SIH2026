@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/farmer-app/index.html"
+    },
+    {
+      "source": "/farmer-app",
+      "destination": "/farmer-app/index.html"
+    },
+    {
+      "source": "/admin-dashboard",
+      "destination": "/admin-dashboard/index.html"
+    }
+  ]
+}
