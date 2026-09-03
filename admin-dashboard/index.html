@@ -286,7 +286,7 @@
       </select>
 
       <button class="btn btn-blue" style="width:auto; padding:6px 12px;" onclick="seedDemoData()">🔄</button>
-      <button class="logout-btn" onclick="window.location.href='/'" style="font-size: 13px; font-weight: 600; padding: 6px 12px; background: #fef2f2; color: #ef4444; border: none; border-radius: 6px; cursor: pointer; margin-left: 10px;">Log Out</button>
+      <button class="logout-btn" onclick="logout()" style="font-size: 13px; font-weight: 600; padding: 6px 12px; background: #fef2f2; color: #ef4444; border: none; border-radius: 6px; cursor: pointer; margin-left: 10px;">Log Out</button>
     </div>
   </header>
 
@@ -339,19 +339,19 @@
     <div class="metrics-row">
       <div class="metric-card">
         <div class="metric-title">Today's Capacity Load</div>
-        <div class="metric-val">180 / 300 <span style="font-size:13px; color:var(--text-muted);">Tractors</span></div>
+        <div class="metric-val" id="statCapacity">-- / 300 <span style="font-size:13px; color:var(--text-muted);">Crops</span></div>
       </div>
       <div class="metric-card">
-        <div class="metric-title">Active Geofenced Tokens (<500m)</div>
-        <div class="metric-val" id="activeGeofencedCount">1 Token</div>
+        <div class="metric-title">Pending Tokens</div>
+        <div class="metric-val" id="activeGeofencedCount">--</div>
       </div>
       <div class="metric-card">
-        <div class="metric-title">AI Predicted Gate Wait</div>
-        <div class="metric-val" style="color:var(--amber-warn);">12 Mins</div>
+        <div class="metric-title">Approved Procurements</div>
+        <div class="metric-val" id="statApproved" style="color:var(--amber-warn);">--</div>
       </div>
       <div class="metric-card">
-        <div class="metric-title">PFMS DBT Disbursed Today</div>
-        <div class="metric-val" style="color:#1d4ed8;">₹1.85 Cr</div>
+        <div class="metric-title">Est. PFMS DBT Disbursed Today</div>
+        <div class="metric-val" id="statPayout" style="color:#1d4ed8;">₹0.00</div>
       </div>
     </div>
 
@@ -716,15 +716,24 @@
 
         tbody.innerHTML = '';
         let pendingCount = 0;
+        let approvedCount = 0;
+        let totalPayout = 0;
 
         if (!crops || crops.length === 0) {
           tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No crops listed yet.</td></tr>';
-          document.getElementById('activeGeofencedCount').innerText = "0 Tokens";
+          document.getElementById('activeGeofencedCount').innerText = "0";
+          document.getElementById('statCapacity').innerHTML = `0 / 300 <span style="font-size:13px; color:var(--text-muted);">Crops</span>`;
+          document.getElementById('statApproved').innerText = "0";
+          document.getElementById('statPayout').innerText = "₹0";
           return;
         }
 
         crops.forEach(item => {
           if (item.status === 'Pending') pendingCount++;
+          if (item.status === 'Approved') {
+            approvedCount++;
+            totalPayout += (item.quantity * item.expected_price);
+          }
           
           const tr = document.createElement('tr');
           tr.className = "dark:bg-slate-900 border-b dark:border-slate-800";
@@ -759,8 +768,11 @@
 
         const geofenceCountEl = document.getElementById('activeGeofencedCount');
         if (geofenceCountEl) {
-           geofenceCountEl.innerText = pendingCount + " Pending";
+           geofenceCountEl.innerText = pendingCount;
         }
+        document.getElementById('statCapacity').innerHTML = `${crops.length} / 300 <span style="font-size:13px; color:var(--text-muted);">Crops</span>`;
+        document.getElementById('statApproved').innerText = approvedCount;
+        document.getElementById('statPayout').innerText = `₹${(totalPayout).toLocaleString('en-IN')}`;
       } catch(e) {
         console.error("Failed to load crops from Supabase:", e);
         const tbody = document.getElementById('queueTableBody');
@@ -899,10 +911,40 @@
       loadGrievances();
     }
 
+    async function logout() {
+      if (supabase) {
+        await supabase.auth.signOut();
+      }
+      window.location.href = '/farmer-app';
+    }
+
     // Initialize Supabase Client dynamically
     let supabase;
-    import('../src/lib/supabaseClient.js').then(module => {
+    import('../src/lib/supabaseClient.js').then(async module => {
       supabase = module.supabase;
+      
+      // Session Guard
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (!session) {
+        alert("You must be logged in as an Admin.");
+        window.location.href = '/farmer-app';
+        return;
+      }
+
+      // Role Guard
+      const { data: userData, error: roleError } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (roleError || !userData || userData.role !== 'admin') {
+        alert("Unauthorized. Admin access required.");
+        window.location.href = '/farmer-app';
+        return;
+      }
+
       // Init Engine
       refreshQueue();
     }).catch(err => {
