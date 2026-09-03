@@ -499,18 +499,120 @@
           <p class="text-xs text-gray-600 dark:text-slate-400 mt-1">Calculated based on standard yield (30 Qtl/Hectare) × Mapped Area.</p>
         </div>
 
-        <button class="btn btn-primary mt-4" onclick="saveFormState('scheme')">Register for Procurement</button>
+        <button class="btn btn-primary mt-4" id="registerCropBtn">Register for Procurement</button>
       </div>
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { supabase, currentFarmerId } from '../src/lib/supabaseClient.js';
+    
+    // Make supabase globally accessible for other inline scripts if needed
+    window.supabase = supabase;
+    window.currentFarmerId = currentFarmerId;
+
     function calculateMaxQty() {
       const area = parseFloat(document.getElementById('schemeArea').value) || 0;
       const maxQty = area * 30;
       document.getElementById('maxQtyDisplay').innerText = maxQty.toFixed(2) + ' Qtl';
     }
-    document.addEventListener('DOMContentLoaded', calculateMaxQty);
+    
+    // Attach listener for crop registration
+    document.getElementById('registerCropBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('registerCropBtn');
+      btn.innerText = 'Registering...';
+      btn.disabled = true;
+
+      const crop = document.getElementById('schemeCrop').value;
+      const area = parseFloat(document.getElementById('schemeArea').value) || 0;
+      const maxQty = area * 30;
+
+      // Extract raw MSP value from string (e.g. "Wheat - MSP: ₹2,275/Qtl")
+      const cropText = document.getElementById('schemeCrop').options[document.getElementById('schemeCrop').selectedIndex].text;
+      const mspMatch = cropText.match(/₹([\d,]+)/);
+      const expectedPrice = mspMatch ? parseFloat(mspMatch[1].replace(/,/g, '')) : 0;
+
+      const { data, error } = await supabase
+        .from('crops')
+        .insert([
+          { 
+            farmer_id: currentFarmerId, 
+            crop_name: crop, 
+            quantity: maxQty, 
+            expected_price: expectedPrice,
+            status: 'Pending'
+          }
+        ]);
+
+      btn.disabled = false;
+      btn.innerText = 'Register for Procurement';
+
+      if (error) {
+        console.error('Error inserting crop:', error);
+        alert('Failed to register crop. ' + error.message);
+      } else {
+        saveFormState('scheme');
+        loadFarmerCrops(); // Refresh the list
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      calculateMaxQty();
+      loadFarmerCrops();
+    });
+
+    // We make loadFarmerCrops global so it can be called elsewhere
+    window.loadFarmerCrops = async function() {
+      const { data: crops, error } = await supabase
+        .from('crops')
+        .select('*')
+        .eq('farmer_id', currentFarmerId);
+        
+      if (error) {
+        console.error('Error fetching crops:', error);
+        return;
+      }
+
+      const listContainer = document.getElementById('crop-list-container');
+      if (!listContainer) return;
+
+      if (crops.length === 0) {
+        listContainer.innerHTML = '<p class="text-sm text-gray-500">No crops registered yet.</p>';
+        return;
+      }
+
+      listContainer.innerHTML = crops.map(crop => `
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow mb-3 border-l-4 border-green-500 flex justify-between items-center">
+          <div>
+            <h4 class="font-bold text-gray-800 dark:text-gray-100">${crop.crop_name}</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Qty: ${crop.quantity} Qtl • Expected: ₹${crop.expected_price}/Qtl</p>
+          </div>
+          <div>
+            <span class="px-3 py-1 text-xs font-semibold rounded-full 
+              ${crop.status === 'Pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : ''}
+              ${crop.status === 'Approved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : ''}
+              ${crop.status === 'Procured' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : ''}">
+              ${crop.status}
+            </span>
+            <button onclick="deleteCrop('${crop.id}')" class="ml-2 text-red-500 hover:text-red-700">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    };
+
+    window.deleteCrop = async function(id) {
+      if(!confirm("Are you sure you want to remove this crop listing?")) return;
+      const { error } = await supabase.from('crops').delete().eq('id', id);
+      if (error) {
+        alert("Failed to delete crop: " + error.message);
+      } else {
+        loadFarmerCrops();
+      }
+    };
+
+    window.calculateMaxQty = calculateMaxQty;
   </script>
 
   <!-- VIEW: Application Status (Expanded Features) -->
@@ -541,6 +643,22 @@
               </select>
               <div id="mspDisplay" style="margin-top:6px; font-size:12px; font-weight:700; color:var(--primary-green);">Live MSP: ₹2,275/Qtl</div>
             </div>
+            
+            <hr class="my-6 border-gray-200 dark:border-slate-700">
+            <h4 class="font-bold mb-4 dark:text-slate-200">Your Registered Crops</h4>
+            <div id="crop-list-container" class="mb-6">
+              <!-- Supabase crops will be rendered here -->
+              <div class="animate-pulse flex space-x-4">
+                <div class="flex-1 space-y-4 py-1">
+                  <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                  <div class="space-y-2">
+                    <div class="h-4 bg-slate-200 rounded"></div>
+                    <div class="h-4 bg-slate-200 rounded w-5/6"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="form-group">
               <label class="form-label">Transport Mode</label>
               <select id="bookingVehicle" class="form-control">

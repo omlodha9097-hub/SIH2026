@@ -704,45 +704,67 @@
 
     async function refreshQueue() {
       try {
-        // Dummy Realistic Indian Data for Live Queue
-        const queue = [
-          { id: 1, token_number: "T-801", farmer_name: "Amit Patel", mobile: "9876543210", crop_type: "Wheat", allocated_crop_qty: 45, hour_slot: "08:00 AM", is_geofenced: 1, distance_to_mandi_meters: 120 },
-          { id: 2, token_number: "T-802", farmer_name: "Vijay Singh", mobile: "8765432109", crop_type: "Paddy", allocated_crop_qty: 60, hour_slot: "09:00 AM", is_geofenced: 1, distance_to_mandi_meters: 340 },
-          { id: 3, token_number: "T-803", farmer_name: "Deepak Sharma", mobile: "7654321098", crop_type: "Chana", allocated_crop_qty: 30, hour_slot: "10:00 AM", is_geofenced: 0, distance_to_mandi_meters: 1500 },
-          { id: 4, token_number: "T-804", farmer_name: "Sunil Verma", mobile: "6543210987", crop_type: "Wheat", allocated_crop_qty: 55, hour_slot: "11:00 AM", is_geofenced: 0, distance_to_mandi_meters: 3200 }
-        ];
-        
         const tbody = document.getElementById('queueTableBody');
-        tbody.innerHTML = '';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4">Loading crops from Supabase...</td></tr>';
 
-        let activeCount = 0;
-        queue.forEach(item => {
-          if (item.is_geofenced) activeCount++;
+        const { data: crops, error } = await supabase
+          .from('crops')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        tbody.innerHTML = '';
+        let pendingCount = 0;
+
+        if (!crops || crops.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No crops listed yet.</td></tr>';
+          document.getElementById('activeGeofencedCount').innerText = "0 Tokens";
+          return;
+        }
+
+        crops.forEach(item => {
+          if (item.status === 'Pending') pendingCount++;
+          
           const tr = document.createElement('tr');
           tr.className = "dark:bg-slate-900 border-b dark:border-slate-800";
-          const isGeofenced = item.is_geofenced === 1 || item.status === 'GEOFENCED_ACTIVE';
-          const distanceStr = isGeofenced ? `<span class="text-sky-700 dark:text-sky-400 font-bold">${item.distance_to_mandi_meters}m</span>` : `<span class="dark:text-slate-300">${item.distance_to_mandi_meters}m</span>`;
-          const badgeHtml = isGeofenced ? `<span class="badge badge-geofenced">✓ Inside 500m</span>` : `<span class="badge badge-booked">Outside Gate</span>`;
+          
+          // Generate a dummy token ID based on crop ID
+          const tokenStr = "T-" + String(item.id).slice(0, 4).padStart(4, '0');
+          
+          let badgeHtml = '';
+          if (item.status === 'Pending') {
+            badgeHtml = '<span class="badge badge-booked">Pending</span>';
+          } else if (item.status === 'Approved') {
+            badgeHtml = '<span class="badge badge-geofenced bg-green-100 text-green-800">Approved</span>';
+          } else {
+            badgeHtml = `<span class="badge badge-completed">${item.status}</span>`;
+          }
 
           tr.innerHTML = `
-            <td><strong class="text-sky-700 dark:text-sky-400">${item.token_number}</strong></td>
-            <td class="dark:text-slate-300">${item.farmer_name}<br><span class="text-[10px] text-gray-500 dark:text-slate-400">${item.mobile}</span></td>
-            <td class="dark:text-slate-300">${item.crop_type} (${item.allocated_crop_qty} Qtl)</td>
-            <td class="dark:text-slate-300">${item.hour_slot}</td>
-            <td>${distanceStr}</td>
+            <td><strong class="text-sky-700 dark:text-sky-400">${tokenStr}</strong></td>
+            <td class="dark:text-slate-300">Farmer ID:<br><span class="text-[10px] text-gray-500 dark:text-slate-400">${item.farmer_id}</span></td>
+            <td class="dark:text-slate-300">${item.crop_name} (${item.quantity} Qtl)</td>
+            <td class="dark:text-slate-300">₹${item.expected_price}/Qtl</td>
+            <td>-</td>
             <td>${badgeHtml}</td>
             <td>
-              <button class="btn btn-blue" style="padding:4px 8px; font-size:11px;" onclick="selectTractorForWeighing(${item.id})">
-                Select
+              <button class="btn btn-blue" style="padding:4px 8px; font-size:11px;" onclick="selectTractorForWeighing('${item.id}', ${item.quantity}, ${item.expected_price})">
+                Review
               </button>
             </td>
           `;
           tbody.appendChild(tr);
         });
 
-        document.getElementById('activeGeofencedCount').innerText = activeCount + " Token(s)";
+        const geofenceCountEl = document.getElementById('activeGeofencedCount');
+        if (geofenceCountEl) {
+           geofenceCountEl.innerText = pendingCount + " Pending";
+        }
       } catch(e) {
-        console.error("Failed to load queue:", e);
+        console.error("Failed to load crops from Supabase:", e);
+        const tbody = document.getElementById('queueTableBody');
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500">Error loading data.</td></tr>';
       }
     }
 
@@ -785,13 +807,20 @@
       }
     }
 
-    function selectTractorForWeighing(slotId) {
-      activeSlotId = slotId;
-      alert("Tractor Slot #" + slotId + " selected for weighbridge & quality inspection.");
+    function selectTractorForWeighing(cropId, expectedQty, expectedPrice) {
+      activeSlotId = cropId;
+      alert("Crop record selected for weighbridge & quality inspection.");
+      // Auto fill weighbridge details based on crop quantity (for demo purposes)
+      document.getElementById('grossWeight').value = (expectedQty * 100) + 1200; // Expected Qtl to KG + Truck weight
+      document.getElementById('tareWeight').value = 1200;
+      recalculateQuality();
+      window.currentCropRate = expectedPrice;
     }
 
     function streamBluetoothScale() {
-      const randomGross = (4800 + Math.random() * 800).toFixed(2);
+      const grossStr = document.getElementById('grossWeight').value;
+      const gross = parseFloat(grossStr) || 4800;
+      const randomGross = (gross + (Math.random() * 50 - 25)).toFixed(2);
       document.getElementById('grossWeight').value = randomGross;
       document.getElementById('scaleDisplay').innerText = parseFloat(randomGross).toLocaleString('en-IN') + " KG";
       recalculateQuality();
@@ -810,13 +839,13 @@
       document.getElementById('foreignVal').innerText = foreign.toFixed(1) + "%";
 
       let grade = "Grade A";
-      let rate = 2275.00;
+      let rate = window.currentCropRate || 2275.00;
       if (moisture > 14.0 || foreign > 2.5) {
         grade = "Grade C";
-        rate = 1980.00;
+        rate = rate * 0.85; // 15% reduction
       } else if (moisture > 12.0 || foreign > 1.5) {
         grade = "Grade B";
-        rate = 2150.00;
+        rate = rate * 0.95; // 5% reduction
       }
 
       const quintals = net / 100.0;
@@ -827,34 +856,58 @@
     }
 
     async function submitQualityAndDisburse() {
+      if (!activeSlotId) {
+        alert("Please select a crop from the queue first.");
+        return;
+      }
+
       const gross = parseFloat(document.getElementById('grossWeight').value);
       const tare = parseFloat(document.getElementById('tareWeight').value);
-      const moisture = parseFloat(document.getElementById('moistureInput').value);
-      const foreign = parseFloat(document.getElementById('foreignInput').value);
-
-      // Mock Backend Logic since backend is removed
+      
       const netWeight = gross - tare;
       let payout = 0;
       if (netWeight > 0) {
-        // Mock MSP calculations
-        payout = netWeight * 22.75;
+        payout = (netWeight / 100) * (window.currentCropRate || 2275);
       }
       
-      setTimeout(() => {
-        alert(`🎉 Quality Approved & PFMS Disbursement Complete!\nPayout Amount: ₹${payout.toLocaleString('en-IN')}\nPFMS Ref UTR: PFMS-MOCK-${Math.floor(Math.random()*1000000)}`);
-        refreshQueue();
-      }, 500);
+      const btn = document.querySelector('.btn-green');
+      const originalText = btn.innerText;
+      btn.innerText = 'Processing...';
+      btn.disabled = true;
+
+      // Update Supabase Record
+      const { error } = await supabase
+        .from('crops')
+        .update({ status: 'Approved' })
+        .eq('id', activeSlotId);
+
+      btn.disabled = false;
+      btn.innerText = originalText;
+
+      if (error) {
+        alert("Failed to approve crop: " + error.message);
+        return;
+      }
+
+      alert(`🎉 Quality Approved & PFMS Disbursement Complete!\nPayout Amount: ₹${payout.toLocaleString('en-IN')}\nPFMS Ref UTR: PFMS-MOCK-${Math.floor(Math.random()*1000000)}`);
+      refreshQueue();
     }
 
     async function seedDemoData() {
-      // Mock seed
-      alert("Database re-seeded successfully with Mandi and Farmer records!");
+      alert("Mock seed logic removed. Use the farmer app to add crops.");
       refreshQueue();
       loadGrievances();
     }
 
-    // Init Engine
-    refreshQueue();
+    // Initialize Supabase Client dynamically
+    let supabase;
+    import('../src/lib/supabaseClient.js').then(module => {
+      supabase = module.supabase;
+      // Init Engine
+      refreshQueue();
+    }).catch(err => {
+      console.error("Failed to load supabase module:", err);
+    });
     // Voice Assistant Hooks
     window.triggerQueueStatus = function() {
       refreshQueue();
